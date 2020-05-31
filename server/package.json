@@ -1,0 +1,25 @@
+{
+  "name": "spotify_sync",
+  "version": "1.0.0",
+  "description": "Syncing spotify players amongst other users",
+  "main": "server.js",
+  "scripts": {
+    "test": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/savethebear/spotify_sync.git"
+  },
+  "author": "Christopher Lee",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/savethebear/spotify_sync/issues"
+  },
+  "homepage": "https://github.com/savethebear/spotify_sync#readme",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "querystring": "^0.2.0",
+    "spotify-web-api-node": "^4.0.0"
+  }
+}
