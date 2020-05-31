@@ -16,7 +16,15 @@ var spotifyApi = new SpotifyWebApi({
     clientId: process.env.SPOTIFY_CLIENT_ID,
     clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
 });
-
+const jssdkscopes = ["streaming", "user-read-email", "user-read-private"];
+const redirectUriParameters = {
+    client_id: process.env.SPOTIFY_CLIENT_ID,
+    response_type: 'token',
+    scope: jssdkscopes.join(' '),
+    redirect_uri: encodeURI(`http://localhost:${PORT}/`),
+    show_dialog: true,
+}
+const redirectUri = `https://accounts.spotify.com/authorize?${qs.stringify(redirectUriParameters)}`;
 
 app.use(express.static('public'));
 
@@ -30,6 +38,15 @@ app.get("/hello", function (request, response) {
         "message": "hi"
     }));
 
+});
+
+app.get("/spotify_authorize", function(request, response) {
+    response.header('Access-Control-Allow-Origin', "*");
+    response.header('Access-Control-Allow-Headers', "*");
+
+    response.send(JSON.stringify({
+        redirectUri
+    }));
 });
 
 // listen for requests :)
