@@ -10,5 +10,16 @@
     "browser_action": {
         "default_popup": "sync_interface.html"
     },
+    "content_scripts": [
+        {
+            "matches": [
+                "http://localhost:3000/*"
+            ],
+            "run_at": "document_start",
+            "js": [
+                "content_scripts/authorise_return.js"
+            ]
+        }
+    ],
     "manifest_version": 2
 }
