@@ -15,9 +15,7 @@ function parseHash(hash) {
 }
 
 function sendToken(token) {
-    chrome.runtime.sendMessage({ access_token: token }, function (response) {
-        // console.log(response.farewell);
-    });
+    chrome.runtime.sendMessage({ access_token: token });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
