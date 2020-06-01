@@ -2,6 +2,9 @@
     "name": "Spotify Sync",
     "version": "1.0",
     "description": "Sync your music with your friends!",
+    "permissions": [
+        "storage"
+    ],
     "background": {
         "scripts": [
             "background.js"
