@@ -16,6 +16,16 @@
     "content_scripts": [
         {
             "matches": [
+                "https://open.spotify.com/*"
+            ],
+            "run_at": "document_start",
+            "js": [
+                "content_scripts/jquery-3.5.1.slim.js",
+                "content_scripts/manual_monitor.js"
+            ]
+        },
+        {
+            "matches": [
                 "http://localhost:3000/*"
             ],
             "run_at": "document_start",
