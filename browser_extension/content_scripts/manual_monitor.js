@@ -44,4 +44,16 @@ document.addEventListener('DOMContentLoaded', () => {
             prev_trigger();
         });
     }
+
+    function play_trigger() {
+        console.log("play has been triggered...");
+    }
+
+    function next_trigger() {
+        console.log("next has been triggered...");
+    }
+
+    function prev_trigger() {
+        console.log("prev has been triggered...");
+    }
 });
