@@ -63,7 +63,8 @@ document.addEventListener('DOMContentLoaded', () => {
             link = link.split("/");
             let id = link[link.length - 1];
             
-            let song_list = new SongList(id);
+            let song_list = new SongList();
+            song_list.updateSongList(id);
         }, 3000);
     }
 
@@ -85,10 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 class SongList {
-    constructor(playlist_id) {
-        this.playlist_id = playlist_id;
+    constructor() {
+        this.playlist_id = null;
         this.song_list = [];
-        this.getSongList();
     }
 
     updateSongList(playlist_id) {
