@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Missing Authentication...");
         }
         localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_KEY, response.access_token);
+        localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, response.expiry);
     });
     
     // Wait untils controls are visible
