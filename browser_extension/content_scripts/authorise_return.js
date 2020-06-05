@@ -19,10 +19,14 @@ function sendToken(token) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
+    let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
+    let expiry = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY);
     if (token &&
-        parseInt(parseInt(localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY))) > Date.now()) {
-        sendToken(token);
+        parseInt(expiry) > Date.now()) {
+        sendToken({
+            token: token,
+            expiry: expiry
+        });
     } else {
         if (window.location.hash) {
             const hash = parseHash(window.location.hash);
@@ -37,6 +41,18 @@ document.addEventListener('DOMContentLoaded', () => {
                });
                return;
             }
+        } else {
+            chrome.runtime.sendMessage({get_access_token: true}, function(response) {
+                token = response.access_token;
+                expiry = response.expiry;
+                if (expiry && parseInt(expiry) > Date.now()) {
+                    sendToken({
+                        token: token,
+                        expiry: expiry
+                    });
+                    return;
+                }
+            });
         }
         alert("Something went wrong...");
     }

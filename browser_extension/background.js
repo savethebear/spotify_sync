@@ -21,6 +21,7 @@ chrome.runtime.onMessage.addListener(
             chrome.storage.sync.set({ SPOTIFY_SESSION_TOKEN_KEY: request.access_token });
             chrome.storage.sync.set({ SPOTIFY_SESSION_TOKEN_EXPIRES_IN: parseInt(request.expiry) });
             spotify_session_token = request.access_token;
+            spotify_session_expiry = request.expiry;
         } else if (request.get_access_token) {
             sendResponse({ access_token: spotify_session_token, expiry: spotify_session_expiry });
         }

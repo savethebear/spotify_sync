@@ -4,7 +4,7 @@ document.getElementById("authorise").addEventListener("click", function(e) {
         .then(e => e.json())
         .then(data => {
             chrome.runtime.sendMessage({ get_access_token: true }, function (response) {
-                if (response) {
+                if (response && parseInt(response.expiry) > Date.now()) {
                     chrome.tabs.create({ url: "http://localhost:3000/"});
                 } else {
                     console.log(data.redirectUri);
