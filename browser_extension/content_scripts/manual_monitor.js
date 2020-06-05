@@ -112,9 +112,30 @@ class SongList {
         }).then(e => e.json())
         .then(data => {
             console.log(data);
+            // data > tracks > items[0] > track > name
+            // data > tracks > items[0] > track > artists[0] > name
+            // data > tracks > items[0] > track > duration_ms
+            // data > tracks > items[0] > track > available_markets
+            const new_song_list = [];
+            for (const song of data.tracks.items) {
+                const cur_track = song.track;
+                new_song_list.push(new Song(cur_track.name, cur_track.artists[0].name, cur_track.duration_ms,
+                    cur_track.available_markets));
+            }
+            this.song_list = new_song_list;
+            debugger;
         })
         .catch(error => {
             console.log(error);
         });
+    }
+}
+
+class Song {
+    constructor(title, artist, duration, markets) {
+        this.title = title;
+        this.artist = artist;
+        this.duration = duration;
+        this.markets = markets;
     }
 }
