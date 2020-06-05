@@ -51,22 +51,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Media buttons events (from other devices)
-        const now_playing = $(".now-playing");
-        const progress_bar = $(".playback-bar div:first-child");
+        const song_list = new SongList();
 
-        const song_changed_observer = new MutationObserver(song_changed);
-        
+        let now_playing;
+        let progress_bar;
+        let song_changed_observer;
+        let interval = setInterval(function() {
+            now_playing = $(".now-playing");
+            progress_bar = $(".playback-bar div:first-child");
+
+            if (now_playing.length > 0) {
+                // init the song list
+                song_changed(song_list, now_playing, progress_bar);
+
+                song_changed_observer = new MutationObserver(function () {
+                    song_changed(song_list, now_playing, progress_bar)
+                });
+                song_changed_observer.observe(now_playing[0], { attributes: true });
+
+                console.log("Done..");
+                clearInterval(interval);
+            }
+        }, 1000);
 
         // Seek
-        let timeout = setTimeout(function() {
-            let link = $(".now-playing").find("div > div > a").attr('href');
-            // parse id
-            link = link.split("/");
-            let id = link[link.length - 1];
-            
-            let song_list = new SongList();
-            song_list.updateSongList(id);
-        }, 3000);
     }
 
     function play_trigger() {
@@ -81,8 +89,37 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("prev has been triggered...");
     }
 
-    function song_changed(progress_bar) {
+    function song_changed(song_list, now_playing, progress_bar) {
         console.log("Song changed..");
+
+        const album_obj = now_playing.find("div > div > a");
+        const current_link = parseAlbumLink(album_obj.attr('href'));
+        const current_song = now_playing.find("a[data-testid='nowplaying-track-link']").first().text();
+
+        if (song_list.song_list.length == 0) {
+            // init song list object
+            song_list.updateSongList(current_link, current_song);
+            return;
+        }
+        
+        // check if the album has changed
+        if (current_link !== song_list.playlist_id) {
+            // playlist changed...
+        } else {
+            // detect prev or next (assuming no shuffle)
+            const offset = song_list.getOffset(current_song);
+            if (offset > song_list.current_offset) {
+                next_trigger();
+            } else {
+                prev_trigger();
+            }
+            song_list.current_offset = offset;
+        }
+    }
+
+    function parseAlbumLink(link) {
+        link = link.split("/");
+        return link[link.length - 1];
     }
 });
 
@@ -90,14 +127,26 @@ class SongList {
     constructor() {
         this.playlist_id = null;
         this.song_list = [];
+        this.current_offset = null;
     }
 
-    updateSongList(playlist_id) {
+    updateSongList(playlist_id, current_song) {
         this.playlist_id = playlist_id;
-        this.getSongList();
+        this.getSongList(current_song);
     }
 
-    getSongList() {
+    getOffset(current_song) {
+        for (let i  = 0; i < this.song_list.length; i++) {
+            const song = this.song_list[i];
+            if (song.title === current_song) {
+                return i;
+            }
+        }
+        console.log("Could not find " + current_song);
+        return null;
+    }
+
+    getSongList(current_song) {
         let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
         if (!token) {
             alert("Missing autherization...");
@@ -111,23 +160,25 @@ class SongList {
             }
         }).then(e => e.json())
         .then(data => {
-            console.log(data);
-            // data > tracks > items[0] > track > name
-            // data > tracks > items[0] > track > artists[0] > name
-            // data > tracks > items[0] > track > duration_ms
-            // data > tracks > items[0] > track > available_markets
             const new_song_list = [];
             for (const song of data.tracks.items) {
                 const cur_track = song.track;
-                new_song_list.push(new Song(cur_track.name, cur_track.artists[0].name, cur_track.duration_ms,
-                    cur_track.available_markets));
+                new_song_list.push(new Song(cur_track.name, cur_track.artists[0].name, 
+                    cur_track.duration_ms, cur_track.available_markets));
             }
             this.song_list = new_song_list;
-            debugger;
+
+            // find offset of current song
+            if (current_song) this.current_offset = this.getOffset(current_song);
+            console.log(this.song_list);
         })
         .catch(error => {
             console.log(error);
         });
+    }
+
+    getCurrentEndTime() {
+
     }
 }
 
