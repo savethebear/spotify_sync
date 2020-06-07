@@ -31,13 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function setupObservers() {
-        // Play
-        let play_button = $(".control-button[data-testid='control-button-pause']");
-        if (play_button.length == 0) play_button = $(".control-button[data-testid='control-button-play']");
-
-        const play_observer = new MutationObserver(play_trigger);
-        play_observer.observe(play_button[0], { attributes: true });
-
         // Next button
         const next_button = $(".control-button[data-testid='control-button-skip-forward']");
         $(next_button).on("click", function () {
@@ -53,32 +46,58 @@ document.addEventListener('DOMContentLoaded', () => {
         // Media buttons events (from other devices)
         const song_list = new SongList();
 
+        // Play
+        let play_button = $(".control-button[data-testid='control-button-pause']");
+        if (play_button.length == 0) play_button = $(".control-button[data-testid='control-button-play']");
+
+        // variables for album changes
         let now_playing;
         let progress_bar;
         let song_changed_observer;
+
+        // variables for seeking
+        const seeking_data = new SeekMonitorData();
+
         let interval = setInterval(function() {
             now_playing = $(".now-playing");
-            progress_bar = $(".playback-bar div:first-child");
+            progress_bar = $(".playback-bar div:first-child").first();
 
             if (now_playing.length > 0) {
                 // init the song list
                 song_changed(song_list, now_playing, progress_bar);
 
                 song_changed_observer = new MutationObserver(function () {
-                    song_changed(song_list, now_playing, progress_bar)
+                    song_changed(song_list, now_playing)
                 });
                 song_changed_observer.observe(now_playing[0], { attributes: true });
+
+                // play observer
+                seeking_data.progress_bar = progress_bar;
+                const play_observer = new MutationObserver(function() {
+                    play_trigger(play_button, seeking_data, song_list.current_offset);
+                });
+                play_observer.observe(play_button[0], { attributes: true });
 
                 console.log("Done..");
                 clearInterval(interval);
             }
         }, 1000);
-
-        // Seek
     }
 
-    function play_trigger() {
+    function play_trigger(play_button, seeking_data, current_offset) {
+
         console.log("play has been triggered...");
+
+        // start interval if currently playing
+        if (play_button.attr("data-testid") === "control-button-pause") {
+            console.log("interval start");
+            seeking_data.seeking_interval = setInterval(function() {
+                seek_monitor(seeking_data, current_offset);
+            }, 1000);
+        } else {
+            console.log("interval stop");
+            clearInterval(seeking_data.seeking_interval);
+        }
     }
 
     function next_trigger() {
@@ -89,7 +108,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("prev has been triggered...");
     }
 
-    function song_changed(song_list, now_playing, progress_bar) {
+    function song_changed(song_list, now_playing) {
         console.log("Song changed..");
 
         const album_obj = now_playing.find("div > div > a");
@@ -120,6 +139,38 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseAlbumLink(link) {
         link = link.split("/");
         return link[link.length - 1];
+    }
+
+    function seek_monitor(seeking_data, current_offset) {        
+        if (!seeking_data.progress_bar) return;
+        if (!seeking_data.past_time) seeking_data.past_time = parseTimeToMS(seeking_data.progress_bar.text());
+        if (!seeking_data.observe_offset || seeking_data.observe_offset !== current_offset) {
+            seeking_data.observe_offset = current_offset;
+            seeking_data.past_time = parseTimeToMS(seeking_data.progress_bar.text());
+            return;
+        }
+
+        let observe_time = parseTimeToMS(seeking_data.progress_bar.text());
+        const time_range = 2000;
+        if (Math.abs(observe_time - seeking_data.past_time) > time_range) {
+            // seek
+            console.log("Seek Detected...");
+        }
+
+        seeking_data.past_time = observe_time;
+
+        function parseTimeToMS(time) {
+            const time_sections = time.split(":");
+            console.log(time);
+            let ms = 0;
+            let multiply = 1000;
+            for (let i = time_sections.length - 1; i >= 0; i--) {
+                ms += parseInt(time_sections[i]) * multiply;
+                multiply *= 60;
+            }
+
+            return ms;
+        }
     }
 });
 
@@ -170,7 +221,6 @@ class SongList {
 
             // find offset of current song
             if (current_song) this.current_offset = this.getOffset(current_song);
-            console.log(this.song_list);
         })
         .catch(error => {
             console.log(error);
@@ -188,5 +238,14 @@ class Song {
         this.artist = artist;
         this.duration = duration;
         this.markets = markets;
+    }
+}
+
+class SeekMonitorData {
+    constructor() {
+        this.progress_bar = null;
+        this.observe_offset = null;
+        this.past_time = null;
+        this.seeking_interval = null;
     }
 }
