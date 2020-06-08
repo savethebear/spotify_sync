@@ -211,7 +211,8 @@ class SongList {
             headers: {
                 Authorization: `Bearer ${token}`
             }
-        }).then(e => e.json())
+        })
+        .then(e => e.json())
         .then(data => {
             const new_song_list = [];
             for (const song of data.tracks.items) {
