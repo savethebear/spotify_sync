@@ -11,6 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, response.expiry);
     });
     
+    let socket = io('http://localhost:3000');
+
     // Wait untils controls are visible
     const observer = new MutationObserver(function (mutation, me) {
         let controls = $(".player-controls");
@@ -33,15 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupObservers() {
         // Next button
         const next_button = $(".control-button[data-testid='control-button-skip-forward']");
-        $(next_button).on("click", function () {
-            next_trigger();
-        });
 
         // Prev button
         const prev_button = $(".control-button[data-testid='control-button-skip-back']");
-        $(prev_button).on("click", function () {
-            prev_trigger();
-        });
 
         // Media buttons events (from other devices)
         const song_list = new SongList();
@@ -85,8 +81,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function play_trigger(play_button, seeking_data, current_offset) {
-
         console.log("play has been triggered...");
+
+        let mode;
 
         // start interval if currently playing
         if (play_button.attr("data-testid") === "control-button-pause") {
@@ -94,10 +91,14 @@ document.addEventListener('DOMContentLoaded', () => {
             seeking_data.seeking_interval = setInterval(function() {
                 seek_monitor(seeking_data, current_offset);
             }, 1000);
+            mode = "play";
         } else {
             console.log("interval stop");
             clearInterval(seeking_data.seeking_interval);
+            mode = "pause";
         }
+
+        socket.emit('play_trigger', mode);
     }
 
     function next_trigger() {

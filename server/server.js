@@ -3,6 +3,8 @@
 var qs = require('querystring');
 var express = require('express');
 var app = express();
+var http = require('http').createServer(app);
+var io = require('socket.io')(http);
 
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
@@ -49,7 +51,36 @@ app.get("/spotify_authorize", function(request, response) {
     }));
 });
 
+// socket connections
+io.on("connection", (socket) => {
+    console.log("user connected...");
+
+    socket.on('play_trigger', (play_command) => {
+        if (play_command === "play") {
+            console.log("Play trigger play...");
+        } else {
+            console.log("Play trigger pause...");
+        }
+    });
+
+    socket.on('next_song', () => {
+        console.log("Next song trigger...");
+    });
+
+    socket.on('prev_song', () => {
+        console.log("Prev song trigger...");
+    });
+
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+    });
+});
+
+
 // listen for requests :)
-var listener = app.listen(PORT, function () {
-    console.log('Your app is listening on port ' + listener.address().port);
+// var listener = app.listen(PORT, function () {
+//     console.log('Your app is listening on port ' + listener.address().port);
+// });
+http.listen(PORT, () => {
+    console.log('listening on *:' + PORT);
 });
