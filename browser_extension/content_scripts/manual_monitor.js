@@ -103,10 +103,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function next_trigger() {
         console.log("next has been triggered...");
+        socket.emit('next_song');
     }
 
     function prev_trigger() {
         console.log("prev has been triggered...");
+        socket.emit('prev_song');
     }
 
     function song_changed(song_list, now_playing) {
