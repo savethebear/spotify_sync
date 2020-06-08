@@ -161,7 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function parseTimeToMS(time) {
             const time_sections = time.split(":");
-            console.log(time);
             let ms = 0;
             let multiply = 1000;
             for (let i = time_sections.length - 1; i >= 0; i--) {
