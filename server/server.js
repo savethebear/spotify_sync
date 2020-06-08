@@ -63,11 +63,11 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on('next_song', () => {
+    socket.on('next_song', (offset) => {
         console.log("Next song trigger...");
     });
 
-    socket.on('prev_song', () => {
+    socket.on('prev_song', (offset) => {
         console.log("Prev song trigger...");
     });
 

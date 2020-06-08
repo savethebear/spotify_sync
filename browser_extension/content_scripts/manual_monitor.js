@@ -101,14 +101,14 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.emit('play_trigger', mode);
     }
 
-    function next_trigger() {
+    function next_trigger(offset) {
         console.log("next has been triggered...");
-        socket.emit('next_song');
+        socket.emit('next_song', offset);
     }
 
-    function prev_trigger() {
+    function prev_trigger(offset) {
         console.log("prev has been triggered...");
-        socket.emit('prev_song');
+        socket.emit('prev_song', offset);
     }
 
     function song_changed(song_list, now_playing) {
@@ -131,9 +131,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // detect prev or next (assuming no shuffle)
             const offset = song_list.getOffset(current_song);
             if (offset > song_list.current_offset) {
-                next_trigger();
+                next_trigger(offset);
             } else {
-                prev_trigger();
+                prev_trigger(offset);
             }
             song_list.current_offset = offset;
         }
