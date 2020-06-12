@@ -1,3 +1,7 @@
+
+/**
+ * Contains song list of current playlist
+ */
 class SongList {
     constructor() {
         this.playlist_id = null;
@@ -57,6 +61,9 @@ class SongList {
     }
 }
 
+/**
+ * Class that represents attributes of a song.
+ */
 class Song {
     constructor(title, artist, duration, markets) {
         this.title = title;
@@ -66,6 +73,9 @@ class Song {
     }
 }
 
+/**
+ * Contains html elements that are important to monitor seeking.
+ */
 class SeekMonitorData {
     constructor() {
         this.progress_bar = null;
