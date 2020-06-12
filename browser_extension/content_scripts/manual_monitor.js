@@ -55,13 +55,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function setupObservers() {
-        // Next button
-        const next_button = $(".control-button[data-testid='control-button-skip-forward']");
-
-        // Prev button
-        const prev_button = $(".control-button[data-testid='control-button-skip-back']");
-
-        // Media buttons events (from other devices)
         const song_list = new SongList();
 
         // Play
@@ -76,6 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // variables for seeking
         const seeking_data = new SeekMonitorData();
 
+        // Wait until player is visible
         let interval = setInterval(function() {
             now_playing = $(".now-playing");
             progress_bar = $(".playback-bar div:first-child").first();
