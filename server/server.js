@@ -61,6 +61,7 @@ io.on("connection", (socket) => {
         } else {
             console.log("Play trigger pause...");
         }
+        socket.broadcast.emit('play_trigger', play_command);
     });
 
     socket.on('next_song', (offset) => {

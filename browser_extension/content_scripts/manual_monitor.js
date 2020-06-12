@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (controls.length > 0) {
             try {
                 setupObservers();
+                setupListeners();
             } catch (error) {
                 console.log(error);
             }
@@ -43,14 +44,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupListeners() {
         socket.on("play_trigger", (play_command) => {
-            observer_blocker.override = false;
+            observer_blocker.override = true;
             play_button = $(SELECTOR_PLAY_BUTTON);
             if ((play_command === "pause" && play_button.attr("data-testid") === "control-button-pause")
                     || (play_command === "play" && play_button.attr("data-testid") === "control-button-play")) {
                 play_button.click();
             }
-
-            observer_blocker.override = true;
+            observer_blocker.override = false;
         });
     }
 
