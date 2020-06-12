@@ -32,6 +32,9 @@ document.addEventListener('DOMContentLoaded', () => {
         subtree: true
     });
 
+    // variable representing source of player interaction
+    const observer_blocker = new ObserverBlocker();
+
     function setupObservers() {
         // Next button
         const next_button = $(".control-button[data-testid='control-button-skip-forward']");
@@ -102,16 +105,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function next_trigger(offset) {
+        // Event was triggered from socket
+        if (observer_blocker.override) return;
+
         console.log("next has been triggered...");
         socket.emit('next_song', offset);
     }
 
     function prev_trigger(offset) {
+        // Event was triggered from socket
+        if (observer_blocker.override) return;
+
         console.log("prev has been triggered...");
         socket.emit('prev_song', offset);
     }
 
     function song_changed(song_list, now_playing) {
+        // Event was triggered from socket
+        if (observer_blocker.override) return;
+        
         console.log("Song changed..");
 
         const album_obj = now_playing.find("div > div > a");
@@ -144,7 +156,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return link[link.length - 1];
     }
 
-    function seek_monitor(seeking_data, current_offset) {        
+    function seek_monitor(seeking_data, current_offset) {   
+        // Event was triggered from socket
+        if (observer_blocker.override) return;   
+
         if (!seeking_data.progress_bar) return;
         if (!seeking_data.past_time) seeking_data.past_time = parseTimeToMS(seeking_data.progress_bar.text());
         if (!seeking_data.observe_offset || seeking_data.observe_offset !== current_offset) {
