@@ -1,6 +1,12 @@
 const LOCALSTORAGE_ACCESS_TOKEN_KEY = 'spotify-sync-access-token';
 const LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY = "spotify-sync-access-token-expires-in";
 
+// selector paths
+const SELECTOR_PLAY_BUTTON = ".control-button[data-testid='control-button-play']";
+const SELECTOR_PAUSE_BUTTON = ".control-button[data-testid='control-button-pause']";
+const SELECTOR_NEXT_BUTTON = ".control-button[data-testid='control-button-skip-forward']";
+const SELECTOR_PREV_BUTTON = ".control-button[data-testid='control-button-skip-back']";
+
 document.addEventListener('DOMContentLoaded', () => {
     // save access token
     chrome.runtime.sendMessage({ get_access_token: true }, function(response) {
