@@ -74,3 +74,13 @@ class SeekMonitorData {
         this.seeking_interval = null;
     }
 }
+
+/**
+ * Contains a boolean representing if the player actions are from user or
+ * the server.
+ */
+class ObserverBlocker {
+    constructor() {
+        this.override = false;
+    }
+}
