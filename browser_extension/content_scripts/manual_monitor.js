@@ -70,7 +70,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // play observer
                 seeking_data.progress_bar = progress_bar;
                 const play_observer = new MutationObserver(function() {
-                    play_trigger(play_button, seeking_data, song_list.current_offset);
+                    play_trigger(play_button);
+                    seek_monitor_setup(play_button, seeking_data, song_list.current_offset)
                 });
                 play_observer.observe(play_button[0], { attributes: true });
 
@@ -80,25 +81,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
 
-    function play_trigger(play_button, seeking_data, current_offset) {
+    function play_trigger(play_button) {
         console.log("play has been triggered...");
 
-        let mode;
+        let mode = play_button.attr("data-testid") === "control-button-pause" ? "play" : "pause";
+        socket.emit('play_trigger', mode);
+    }
 
+    function seek_monitor_setup(play_button, seeking_data, current_offset) {
         // start interval if currently playing
         if (play_button.attr("data-testid") === "control-button-pause") {
             console.log("interval start");
-            seeking_data.seeking_interval = setInterval(function() {
+            seeking_data.seeking_interval = setInterval(function () {
                 seek_monitor(seeking_data, current_offset);
             }, 1000);
-            mode = "play";
         } else {
             console.log("interval stop");
             clearInterval(seeking_data.seeking_interval);
-            mode = "pause";
         }
-
-        socket.emit('play_trigger', mode);
     }
 
     function next_trigger(offset) {
