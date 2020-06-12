@@ -102,3 +102,6 @@ dist
 
 # TernJS port file
 .tern-port
+
+browser_extension/content_scripts/jquery-3.5.1.slim.js
+browser_extension/content_scripts/socket.io.js
