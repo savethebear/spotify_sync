@@ -41,6 +41,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // variable representing source of player interaction
     const observer_blocker = new ObserverBlocker();
 
+    function setupListeners() {
+        socket.on("play_trigger", (play_command) => {
+            observer_blocker.override = false;
+            play_button = $(SELECTOR_PLAY_BUTTON);
+            if ((play_command === "pause" && play_button.attr("data-testid") === "control-button-pause")
+                    || (play_command === "play" && play_button.attr("data-testid") === "control-button-play")) {
+                play_button.click();
+            }
+
+            observer_blocker.override = true;
+        });
+    }
+
     function setupObservers() {
         // Next button
         const next_button = $(".control-button[data-testid='control-button-skip-forward']");
@@ -91,13 +104,20 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function play_trigger(play_button) {
-        console.log("play has been triggered...");
-
-        let mode = play_button.attr("data-testid") === "control-button-pause" ? "play" : "pause";
-        socket.emit('play_trigger', mode);
+        if (!observer_blocker.override) {
+            console.log("play has been triggered...");
+    
+            let mode = play_button.attr("data-testid") === "control-button-pause" ? "play" : "pause";
+            socket.emit('play_trigger', mode);
+        } else {
+            // trigger play button
+            play_button.click();
+        }
     }
 
     function seek_monitor_setup(play_button, seeking_data, current_offset) {
+        clearInterval(seeking_data.seeking_interval);
+
         // start interval if currently playing
         if (play_button.attr("data-testid") === "control-button-pause") {
             console.log("interval start");
@@ -106,7 +126,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 1000);
         } else {
             console.log("interval stop");
-            clearInterval(seeking_data.seeking_interval);
         }
     }
 
