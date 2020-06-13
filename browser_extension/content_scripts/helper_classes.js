@@ -106,5 +106,13 @@ class SeekMonitorData {
 class ObserverBlocker {
     constructor() {
         this.override = false;
+        this.override_song_change = false;
+    }
+
+    executeEvent(event) {
+        if (typeof event !== "function") return;
+        this.override = true;
+        event();
+        this.override = false;
     }
 }

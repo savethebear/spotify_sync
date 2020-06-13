@@ -48,19 +48,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setupListeners() {
         // Play button
-        socket.on("play_trigger", (play_command) => {
-            observer_blocker.override = true;
-            play_button = $(SELECTOR_PLAY_BUTTON);
-            if ((play_command === "pause" && play_button.attr("data-testid") === "control-button-pause")
+        socket.on("external_play_trigger", (play_command) => {
+            observer_blocker.executeEvent(function() {
+                const play_button = $(SELECTOR_PLAY_BUTTON).first();
+                if ((play_command === "pause" && play_button.attr("data-testid") === "control-button-pause")
                     || (play_command === "play" && play_button.attr("data-testid") === "control-button-play")) {
-                play_button.click();
-            }
-            observer_blocker.override = false;
+                    play_button.click();
+                }
+            });
         });
 
         // Next button
-        socket.on("next_song", (offset) => {
-            // 
+        socket.on("external_next_song", (offset) => {
+            observer_blocker.executeEvent(function() {
+                observer_blocker.override_song_change = true;
+                if (offset !== song_list.current_offset) {
+                    $(SELECTOR_NEXT_BUTTON).first().click();
+                }
+            });
         });
     }
 
@@ -146,8 +151,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function song_changed(song_list, now_playing) {
         // Event was triggered from socket
-        if (observer_blocker.override) return;
-        
+        if (observer_blocker.override || observer_blocker.override_song_change) {
+            observer_blocker.override_song_change = false;
+            return;
+        }
         console.log("Song changed..");
 
         const album_obj = now_playing.find("div > div > a");

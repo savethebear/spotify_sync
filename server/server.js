@@ -61,11 +61,12 @@ io.on("connection", (socket) => {
         } else {
             console.log("Play trigger pause...");
         }
-        socket.broadcast.emit('play_trigger', play_command);
+        socket.broadcast.emit('external_play_trigger', play_command);
     });
 
     socket.on('next_song', (offset) => {
         console.log("Next song trigger...");
+        socket.broadcast.emit('external_next_song', offset);
     });
 
     socket.on('prev_song', (offset) => {
@@ -75,6 +76,10 @@ io.on("connection", (socket) => {
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
+
+    setTimeout(function() {
+        socket.emit("external_next_song", 1);
+    }, 5000);
 });
 
 
