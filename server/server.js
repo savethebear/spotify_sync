@@ -76,10 +76,6 @@ io.on("connection", (socket) => {
     socket.on('disconnect', () => {
         console.log('user disconnected');
     });
-
-    setTimeout(function() {
-        socket.emit("external_next_song", 1);
-    }, 5000);
 });
 
 
