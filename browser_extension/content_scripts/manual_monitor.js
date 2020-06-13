@@ -103,9 +103,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
             let mode = play_button.attr("data-testid") === "control-button-pause" ? "play" : "pause";
             socket.emit('play_trigger', mode);
-        } else {
-            // trigger play button
-            play_button.click();
         }
     }
 
