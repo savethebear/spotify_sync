@@ -1,3 +1,4 @@
+// saved access token keys
 const LOCALSTORAGE_ACCESS_TOKEN_KEY = 'spotify-sync-access-token';
 const LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY = "spotify-sync-access-token-expires-in";
 
@@ -6,6 +7,9 @@ const SELECTOR_PLAY_BUTTON = ".control-button[data-testid='control-button-play']
 const SELECTOR_PAUSE_BUTTON = ".control-button[data-testid='control-button-pause']";
 const SELECTOR_NEXT_BUTTON = ".control-button[data-testid='control-button-skip-forward']";
 const SELECTOR_PREV_BUTTON = ".control-button[data-testid='control-button-skip-back']";
+
+// socket server
+const SERVER_IP = "http://localhost:3000";
 
 document.addEventListener('DOMContentLoaded', () => {
     // save access token
@@ -17,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, response.expiry);
     });
     
-    let socket = io('http://localhost:3000');
+    let socket = io(SERVER_IP);
 
     // Wait untils controls are visible
     const observer = new MutationObserver(function (mutation, me) {
@@ -39,10 +43,11 @@ document.addEventListener('DOMContentLoaded', () => {
         subtree: true
     });
 
-    // variable representing source of player interaction
-    const observer_blocker = new ObserverBlocker();
+    const observer_blocker = new ObserverBlocker(); // variable representing source of player interaction
+    const song_list = new SongList();  // Contains list of songs for current playlist
 
     function setupListeners() {
+        // Play button
         socket.on("play_trigger", (play_command) => {
             observer_blocker.override = true;
             play_button = $(SELECTOR_PLAY_BUTTON);
@@ -52,11 +57,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             observer_blocker.override = false;
         });
+
+        // Next button
+        socket.on("next_song", (offset) => {
+            // 
+        });
     }
 
     function setupObservers() {
-        const song_list = new SongList();
-
         // Play
         let play_button = $(".control-button[data-testid='control-button-pause']");
         if (play_button.length == 0) play_button = $(".control-button[data-testid='control-button-play']");
