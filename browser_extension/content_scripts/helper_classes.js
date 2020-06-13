@@ -9,11 +9,21 @@ class SongList {
         this.current_offset = null;
     }
 
+    /**
+     * Method repopulates song list of new playlist
+     * @param {int} playlist_id Spotify playlist id
+     * @param {string} current_song Name of the current song
+     */
     updateSongList(playlist_id, current_song) {
         this.playlist_id = playlist_id;
         this.getSongList(current_song);
     }
 
+    /**
+     * Gets the current position of the song.
+     * @param {string} current_song Name of the current song
+     * @returns The position of the song, and returns null if not found.
+     */
     getOffset(current_song) {
         for (let i = 0; i < this.song_list.length; i++) {
             const song = this.song_list[i];
@@ -25,6 +35,10 @@ class SongList {
         return null;
     }
 
+    /**
+     * Populates a list of song objects.
+     * @param {string} current_song name of the current song to set the current offset.
+     */
     getSongList(current_song) {
         let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
         if (!token) {
