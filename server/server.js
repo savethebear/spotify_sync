@@ -59,10 +59,20 @@ function randomString(length, chars) {
     return result;
 }
 
+const active_rooms = {};
 
 // socket connections
 io.on("connection", (socket) => {
     console.log("user connected...");
+
+    socket.on('create_room', () => {
+        let room_id;
+        do {
+            room_id = randomString(5, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789');
+        } while (active_rooms[room_id]);
+
+        active_rooms[room_id] = true;
+    });
 
     socket.on('play_trigger', (play_command) => {
         if (play_command === "play") {
