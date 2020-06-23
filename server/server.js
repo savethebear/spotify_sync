@@ -68,7 +68,7 @@ io.on("connection", (socket) => {
     socket.on('create_room', () => {
         let room_id;
         do {
-            room_id = randomString(5, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ123456789');
+            room_id = randomString(5, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
         } while (active_rooms[room_id]);
 
         active_rooms[room_id] = true;
