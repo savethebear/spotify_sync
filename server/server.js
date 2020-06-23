@@ -51,6 +51,15 @@ app.get("/spotify_authorize", function(request, response) {
     }));
 });
 
+
+// Generate room
+function randomString(length, chars) {
+    var result = '';
+    for (var i = length; i > 0; --i) result += chars[Math.floor(Math.random() * chars.length)];
+    return result;
+}
+
+
 // socket connections
 io.on("connection", (socket) => {
     console.log("user connected...");
