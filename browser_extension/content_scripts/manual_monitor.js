@@ -124,12 +124,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // start interval if currently playing
         if (play_button.attr("data-testid") === "control-button-pause") {
-            console.log("interval start");
             seeking_data.seeking_interval = setInterval(function () {
                 seek_monitor(seeking_data, current_offset);
             }, 1000);
-        } else {
-            console.log("interval stop");
         }
     }
 
