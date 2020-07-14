@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_KEY, hash['access_token']);
                 const expiry_time = Date.now() + 990 * parseInt(hash['expires_in']);
                 localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, expiry_time);
-               sendToken({
+                sendToken({
                    token: hash['access_token'],
                    expiry: expiry_time
                });

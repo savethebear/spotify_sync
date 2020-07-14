@@ -13,4 +13,19 @@ document.getElementById("authorise").addEventListener("click", function(e) {
             });
         })
         .catch(error => { alert("Failed to prepare for Spotify Authentication") });
-})
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    chrome.runtime.sendMessage({ get_access_token: true }, function (response) {
+        if (response.access_token) {
+            const outer_buttons = document.getElementsByClassName("outer_buttons");
+            if (outer_buttons.length > 0) {
+                outer_buttons[0].style.display = "block";
+            } else {
+                alert("An error has occured please try again...");
+                return;
+            }
+            document.getElementById("authorise").style.display = "none";
+        }
+    });
+});

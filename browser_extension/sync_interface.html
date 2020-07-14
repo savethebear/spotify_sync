@@ -2,16 +2,38 @@
 <html>
 <head>
     <style>
-        button {
+        body {
+            width: 200px;
+        }
+        #authorise {
             height: 100px;
             width: 200px;
             outline: none;
+        }
+
+        .outer_buttons {
+            display: none;
+            width: 100%;
+            text-align: center;
+        }
+
+        .inline_buttons {
+            display: inline-block;
+            margin: 0 auto;
         }
     </style>
 </head>
 
 <body>
     <button id="authorise">Authorise User</button>
+    <div class="outer_buttons">
+        <div class="inline_buttons">
+            <button id="create_room">Create Room</button>
+            <button id="join_room">Join Room</button>
+        </div>
+    </div>
+
+
     <script src="sync_interface.js"></script>
 </body>
 </html>
