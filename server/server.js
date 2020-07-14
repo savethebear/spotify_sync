@@ -65,13 +65,15 @@ const active_rooms = {};
 io.on("connection", (socket) => {
     console.log("user connected...");
 
-    socket.on('create_room', () => {
+    socket.on('create_room', (data, callback) => {
         let room_id;
         do {
             room_id = randomString(5, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
         } while (active_rooms[room_id]);
 
         active_rooms[room_id] = true;
+        
+        callback(room_id);
     });
 
     socket.on('play_trigger', (play_command) => {
