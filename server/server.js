@@ -88,13 +88,13 @@ io.on("connection", (socket) => {
         }
     });
 
-    socket.on('play_trigger', (play_command) => {
+    socket.on('play_trigger', (play_command, room_id) => {
         if (play_command === "play") {
             console.log("Play trigger play...");
         } else {
             console.log("Play trigger pause...");
         }
-        socket.broadcast.emit('external_play_trigger', play_command);
+        socket.to(room_id).emit('external_play_trigger', play_command);
     });
 
     socket.on('next_song', (offset) => {
