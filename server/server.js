@@ -71,7 +71,7 @@ io.on("connection", (socket) => {
             room_id = randomString(5, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
         } while (active_rooms[room_id]);
 
-        active_rooms[room_id] = true;
+        active_rooms[room_id] = 1;
         
         callback(room_id);
     });
@@ -104,6 +104,19 @@ io.on("connection", (socket) => {
 
     socket.on('prev_song', (offset) => {
         console.log("Prev song trigger...");
+    });
+
+    socket.on('disconnecting', (reason) => {
+        for (let key of Object.keys(socket.rooms)) {
+            const room = active_rooms[key];
+            if (room) {
+                if (room < 2) {
+                    delete active_rooms[key];
+                } else {
+                    active_rooms[key]--;
+                }
+            }
+        }
     });
 
     socket.on('disconnect', () => {
