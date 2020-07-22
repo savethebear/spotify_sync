@@ -76,6 +76,18 @@ io.on("connection", (socket) => {
         callback(room_id);
     });
 
+    socket.on('join_room', (data, callback) => {
+        const success = "success";
+        const unknown_room = "unknown_room";
+        
+        if (data.room_id && active_rooms[room_id]) {
+            callback(success);
+            active_rooms[room_id]++;
+        } else {
+            callback(unknown_room);
+        }
+    });
+
     socket.on('play_trigger', (play_command) => {
         if (play_command === "play") {
             console.log("Play trigger play...");
