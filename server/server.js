@@ -80,7 +80,9 @@ io.on("connection", (socket) => {
         const success = "success";
         const unknown_room = "unknown_room";
         
-        if (data.room_id && active_rooms[room_id]) {
+        if (data.room_id && active_rooms[data.room_id]) {
+            socket.join(data.room_id);
+            active_rooms[data.room_id]++;
             callback(success);
             active_rooms[room_id]++;
         } else {

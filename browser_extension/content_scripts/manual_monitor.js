@@ -110,12 +110,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     }
 
-    function play_trigger(play_button) {
+    function play_trigger(play_button, room_id) {
         if (!observer_blocker.override) {
             console.log("play has been triggered...");
     
             let mode = play_button.attr("data-testid") === "control-button-pause" ? "play" : "pause";
-            socket.emit('play_trigger', mode);
+            socket.emit('play_trigger', mode, room_id);
         }
     }
 
