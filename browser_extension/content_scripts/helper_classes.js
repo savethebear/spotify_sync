@@ -116,3 +116,14 @@ class ObserverBlocker {
         this.override = false;
     }
 }
+
+/**
+ * Contains information related to the current session of the room
+ */
+class SessionData {
+    constructor() {
+        this.playlist_id;
+        this.song_offset;
+        this.milliseconds;
+    }
+}
