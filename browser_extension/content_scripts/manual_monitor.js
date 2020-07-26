@@ -23,13 +23,29 @@ document.addEventListener('DOMContentLoaded', () => {
     
     let socket = io(SERVER_IP);
 
+    // ========== FOR DEBUGGING PURPOSE ==========
+    const test_room = 'test_room'
+    // socket.emit('join_room', { room_id: test_room }, function (code, playlist_id, song_offset, miliseconds) {
+    //     if (code === "success") {
+    //         console.log(`Successfully joined ${test_room}`);
+    //     } else {
+    //         console.log(`Failed to join ${test_room}`);
+    //     }
+    // });
+
+    // ========== FOR DEBUGGING PURPOSE ==========
+
+    const observer_blocker = new ObserverBlocker(); // variable representing source of player interaction
+    const song_list = new SongList();  // Contains list of songs for current playlist
+    const seeking_data = new SeekMonitorData();  // object for seeking
+    let session_data = null;
+
     // Wait untils controls are visible
     const observer = new MutationObserver(function (mutation, me) {
         let controls = $(".player-controls");
         if (controls.length > 0) {
             try {
-                setupObservers();
-                setupListeners();
+                setupObservers(session_data);
             } catch (error) {
                 console.log(error);
             }
@@ -37,16 +53,33 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
     });
-
     observer.observe(document, {
         childList: true,
         subtree: true
     });
-
-    const observer_blocker = new ObserverBlocker(); // variable representing source of player interaction
-    const song_list = new SongList();  // Contains list of songs for current playlist
-
+    setupListeners();
     function setupListeners() {
+        // ========== Session data handlers ==========
+        socket.on("get_current_session", (socket_id) => {
+            socket.emit(socket_id, 
+                new SessionData(song_list.playlist_id, song_list.current_offset, seeking_data.progress_bar.text()));
+        });
+        
+        socket.on("retrieve_session_data", (session_data) => {
+            if (session_data.playlist_id && session_data.song_offset) {
+                // Init session
+                const data = {
+
+                }
+
+                // Start observers
+                
+            }
+        });
+
+
+        // ========== Player Handlers ==========
+
         // Play button
         socket.on("external_play_trigger", (play_command) => {
             observer_blocker.executeEvent(function() {
@@ -78,9 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
         let now_playing;
         let progress_bar;
         let song_changed_observer;
-
-        // variables for seeking
-        const seeking_data = new SeekMonitorData();
 
         // Wait until player is visible
         let interval = setInterval(function() {

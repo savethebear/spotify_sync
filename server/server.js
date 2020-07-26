@@ -59,7 +59,9 @@ function randomString(length, chars) {
     return result;
 }
 
-const active_rooms = {};
+const active_rooms = {
+    "test_room": 1
+};
 
 // socket connections
 io.on("connection", (socket) => {
@@ -79,15 +81,30 @@ io.on("connection", (socket) => {
     socket.on('join_room', (data, callback) => {
         const success = "success";
         const unknown_room = "unknown_room";
+        const no_one_in_room = "no_one_in_room";
         
         if (data.room_id && active_rooms[data.room_id]) {
-            socket.join(data.room_id);
+            socket.join(data.room_id, () => {
+                // ask random person in room to give current status
+                const current_users = Object.keys(io.sockets.adapter.rooms);
+                const random_user = current_users.length > 0 ? current_users[0] : null;
+
+                if (!random_user) {
+                    callback(no_one_in_room);
+                    return;
+                }
+                
+                io.to(random_user).emit('get_current_session', socket.id);
+                callback(success);
+            });
             active_rooms[data.room_id]++;
-            callback(success);
-            active_rooms[room_id]++;
         } else {
             callback(unknown_room);
         }
+    });
+
+    socket.on('send_session_data', (socket_id, session_data) => {
+        io.to(socket_id).emit('retrieve_session_data', session_data);
     });
 
     socket.on('play_trigger', (play_command, room_id) => {
