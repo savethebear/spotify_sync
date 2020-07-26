@@ -1,5 +1,6 @@
 const LOCALSTORAGE_ACCESS_TOKEN_KEY = 'spotify-sync-access-token';
 const LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY = "spotify-sync-access-token-expires-in";
+const SPOTIFY_WEB_PLAYER_URL = "https://open.spotify.com/";
 
 function parseHash(hash) {
     return hash
@@ -27,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             token: token,
             expiry: expiry
         });
+        window.location.assign(SPOTIFY_WEB_PLAYER_URL);
     } else {
         if (window.location.hash) {
             const hash = parseHash(window.location.hash);
@@ -39,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
                    token: hash['access_token'],
                    expiry: expiry_time
                });
+               window.location.assign(SPOTIFY_WEB_PLAYER_URL);
                return;
             }
         } else {
@@ -50,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         token: token,
                         expiry: expiry
                     });
+                    window.location.assign(SPOTIFY_WEB_PLAYER_URL);
                     return;
                 }
             });
