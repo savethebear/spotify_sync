@@ -25,7 +25,6 @@ class SongList {
      * @returns The position of the song, and returns null if not found.
      */
     getOffset(current_song) {
-        console.log(this.song_list);
         for (let i = 0; i < this.song_list.length; i++) {
             const song = this.song_list[i];
             if (song.title === current_song) {
@@ -40,35 +39,34 @@ class SongList {
      * Populates a list of song objects.
      * @param {string} current_song name of the current song to set the current offset.
      */
-    getSongList(current_song) {
+    async getSongList(current_song) {
         let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
         if (!token) {
             alert("Missing autherization...");
             return;
         }
 
-        fetch(`https://api.spotify.com/v1${this.parsePlaylistId()}`, {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        })
-            .then(e => e.json())
-            .then(data => {
-                const new_song_list = [];
-                for (const song of data.tracks.items) {
-                    const cur_track = song.track;
-                    new_song_list.push(new Song(cur_track.name, cur_track.artists[0].name,
-                        cur_track.duration_ms, cur_track.available_markets));
+        let link = `https://api.spotify.com/v1${this.parsePlaylistId()}/tracks`;
+        this.song_list = [];
+        while (link) {
+            let response = await fetch(link, {
+                method: "GET",
+                headers: {
+                    Authorization: `Bearer ${token}`
                 }
-                this.song_list = new_song_list;
-
-                // find offset of current song
-                if (current_song) this.current_offset = this.getOffset(current_song);
             })
             .catch(error => {
                 console.log(error);
             });
+            const data = await response.json();
+            for (const song of data.items) {
+                const cur_track = song.track;
+                this.song_list.push(new Song(cur_track.name, cur_track.artists[0].name,
+                    cur_track.duration_ms, cur_track.available_markets));
+            }
+            link = data.next;
+        }
+        if (current_song) this.current_offset = this.getOffset(current_song);
     }
 
     parsePlaylistId() {
