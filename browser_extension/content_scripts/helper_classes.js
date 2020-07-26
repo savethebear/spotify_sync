@@ -25,6 +25,7 @@ class SongList {
      * @returns The position of the song, and returns null if not found.
      */
     getOffset(current_song) {
+        console.log(this.song_list);
         for (let i = 0; i < this.song_list.length; i++) {
             const song = this.song_list[i];
             if (song.title === current_song) {
@@ -46,7 +47,7 @@ class SongList {
             return;
         }
 
-        fetch(`https://api.spotify.com/v1/playlists/${this.playlist_id}`, {
+        fetch(`https://api.spotify.com/v1${this.parsePlaylistId()}`, {
             method: "GET",
             headers: {
                 Authorization: `Bearer ${token}`
@@ -68,6 +69,13 @@ class SongList {
             .catch(error => {
                 console.log(error);
             });
+    }
+
+    parsePlaylistId() {
+        let modified = this.playlist_id;
+        modified = modified.replace("album", "albums");
+        modified = modified.replace("playlist", "playlists");
+        return modified;
     }
 
     getCurrentEndTime() {

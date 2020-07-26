@@ -185,7 +185,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("Song changed..");
 
         const album_obj = now_playing.find("div > div > a");
-        const current_link = parseAlbumLink(album_obj.attr('href'));
+        const current_link = album_obj.attr('href');
         const current_song = now_playing.find("a[data-testid='nowplaying-track-link']").first().text();
 
         if (song_list.song_list.length == 0) {
@@ -197,6 +197,9 @@ document.addEventListener('DOMContentLoaded', () => {
         // check if the album has changed
         if (current_link !== song_list.playlist_id) {
             // playlist changed...
+            song_list.updateSongList(current_link, current_song);
+            console.log("playlist changed");
+            // todo: emit something
         } else {
             // detect prev or next (assuming no shuffle)
             const offset = song_list.getOffset(current_song);
@@ -207,11 +210,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             song_list.current_offset = offset;
         }
-    }
-
-    function parseAlbumLink(link) {
-        link = link.split("/");
-        return link[link.length - 1];
     }
 
     function seek_monitor(seeking_data, current_offset) {   
