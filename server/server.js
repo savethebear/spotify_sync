@@ -103,8 +103,8 @@ io.on("connection", (socket) => {
                     io.to(socket.id).emit('retrieve_session_data', 
                         {
                             playlist_id: "/playlist/2LbdIXB6JzgsEgNk90Bxe3", 
-                            song_offset: 2, 
-                            milliseconds: 3
+                            song_offset: 2,
+                            milliseconds: 1000
                         });
                 } else {
                     io.to(random_user).emit('get_current_session', socket.id);

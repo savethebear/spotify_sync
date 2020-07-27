@@ -1,6 +1,8 @@
+const CONSTANTS = new ConstantVariables();
+
 document.getElementById("authorise").addEventListener("click", function(e) {
     e.preventDefault();
-    fetch('http://localhost:3000/spotify_authorize')
+    fetch(`http://${CONSTANTS.server_ip}:3000/spotify_authorize`)
         .then(e => e.json())
         .then(data => {
             chrome.runtime.sendMessage({ get_access_token: true }, function (response) {

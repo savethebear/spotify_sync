@@ -8,8 +8,10 @@ const SELECTOR_PAUSE_BUTTON = ".control-button[data-testid='control-button-pause
 const SELECTOR_NEXT_BUTTON = ".control-button[data-testid='control-button-skip-forward']";
 const SELECTOR_PREV_BUTTON = ".control-button[data-testid='control-button-skip-back']";
 
+const CONSTANTS = new ConstantVariables();
+
 // socket server
-const SERVER_IP = "http://localhost:3000";
+const SERVER_IP = `http://${CONSTANTS.server_ip}:3000`;
 
 document.addEventListener('DOMContentLoaded', () => {
     // save access token
@@ -58,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupListeners() {
         // ========== Session data handlers ==========
         socket.on("get_current_session", (socket_id) => {
+            console.log(seeking_data);
             socket.emit('send_session_data', socket_id, 
                 new SessionData(song_list.playlist_id, song_list.current_offset, seeking_data.progress_bar.text()));
         });
@@ -70,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const data = {
                     context_uri: `spotify:${contextURIParse(session_data.playlist_id)}`,
-                    offset: parseInt(session_data.current_offset),
+                    offset: { position: parseInt(session_data.song_offset) },
                     position_ms: parseInt(session_data.milliseconds)
                 };
 
@@ -81,8 +84,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     },
                     body: JSON.stringify(data)
                 })
-                .then(response => response.json())
-                .then(data => {
+                .then(response => {
+                    console.log(response);
                     // Start observers
                     observer.observe(document, {
                         childList: true,
