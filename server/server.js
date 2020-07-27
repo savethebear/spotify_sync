@@ -84,17 +84,31 @@ io.on("connection", (socket) => {
         const no_one_in_room = "no_one_in_room";
         
         if (data.room_id && active_rooms[data.room_id]) {
+            const current_users_map = io.sockets.adapter.rooms[data.room_id];
+            let current_users = [];
+            if (current_users_map) {
+                current_users = Object.keys(current_users_map.sockets);
+            }
+
             socket.join(data.room_id, () => {
                 // ask random person in room to give current status
-                const current_users = Object.keys(io.sockets.adapter.rooms);
                 const random_user = current_users.length > 0 ? current_users[0] : null;
 
-                if (!random_user) {
-                    callback(no_one_in_room);
-                    return;
+                // if (!random_user) {
+                //     callback(no_one_in_room);
+                //     return;
+                // }
+                console.log(current_users);
+                if (current_users.length === 0) {
+                    io.to(socket.id).emit('retrieve_session_data', 
+                        {
+                            playlist_id: "/playlist/2LbdIXB6JzgsEgNk90Bxe3", 
+                            song_offset: 2, 
+                            milliseconds: 3
+                        });
+                } else {
+                    io.to(random_user).emit('get_current_session', socket.id);
                 }
-                
-                io.to(random_user).emit('get_current_session', socket.id);
                 callback(success);
             });
             active_rooms[data.room_id]++;
