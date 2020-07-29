@@ -11,7 +11,7 @@ const SELECTOR_PREV_BUTTON = ".control-button[data-testid='control-button-skip-b
 const CONSTANTS = new ConstantVariables();
 
 // socket server
-const SERVER_IP = `http://${CONSTANTS.server_ip}:3000`;
+const SERVER_IP = `https://${CONSTANTS.server_ip}:3000`;
 
 document.addEventListener('DOMContentLoaded', () => {
     // save access token
@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, response.expiry);
     });
     
-    let socket = io(SERVER_IP);
+    let socket = io.connect(SERVER_IP, { secure: true });
 
     // ========== FOR DEBUGGING PURPOSE ==========
     const test_room = 'test_room'
