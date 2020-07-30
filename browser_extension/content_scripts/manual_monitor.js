@@ -8,8 +8,10 @@ const SELECTOR_PAUSE_BUTTON = ".control-button[data-testid='control-button-pause
 const SELECTOR_NEXT_BUTTON = ".control-button[data-testid='control-button-skip-forward']";
 const SELECTOR_PREV_BUTTON = ".control-button[data-testid='control-button-skip-back']";
 
+const CONSTANTS = new ConstantVariables();
+
 // socket server
-const SERVER_IP = "http://localhost:3000";
+const SERVER_IP = `https://${CONSTANTS.server_ip}:3000`;
 
 document.addEventListener('DOMContentLoaded', () => {
     // save access token
@@ -21,17 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, response.expiry);
     });
     
-    let socket = io(SERVER_IP);
+    let socket = io.connect(SERVER_IP, { secure: true });
 
     // ========== FOR DEBUGGING PURPOSE ==========
     const test_room = 'test_room'
-    // socket.emit('join_room', { room_id: test_room }, function (code, playlist_id, song_offset, miliseconds) {
-    //     if (code === "success") {
-    //         console.log(`Successfully joined ${test_room}`);
-    //     } else {
-    //         console.log(`Failed to join ${test_room}`);
-    //     }
-    // });
+    socket.emit('join_room', { room_id: test_room }, function (code) {
+        if (code === "success") {
+            console.log(`Successfully joined ${test_room}`);
+        } else {
+            console.log(`Failed to join ${test_room}`);
+        }
+    });
 
     // ========== FOR DEBUGGING PURPOSE ==========
 
@@ -53,30 +55,56 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
     });
-    observer.observe(document, {
-        childList: true,
-        subtree: true
-    });
+    
     setupListeners();
     function setupListeners() {
         // ========== Session data handlers ==========
         socket.on("get_current_session", (socket_id) => {
-            socket.emit(socket_id, 
+            console.log(seeking_data);
+            socket.emit('send_session_data', socket_id, 
                 new SessionData(song_list.playlist_id, song_list.current_offset, seeking_data.progress_bar.text()));
         });
         
         socket.on("retrieve_session_data", (session_data) => {
             if (session_data.playlist_id && session_data.song_offset) {
+                console.log(session_data);
                 // Init session
+                let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
+
                 const data = {
+                    context_uri: `spotify:${contextURIParse(session_data.playlist_id)}`,
+                    offset: { position: parseInt(session_data.song_offset) },
+                    position_ms: parseInt(session_data.milliseconds)
+                };
 
-                }
+                fetch(`https://api.spotify.com/v1/me/player/play`, {
+                    method: "PUT",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => {
+                    console.log(response);
+                    // Start observers
+                    observer.observe(document, {
+                        childList: true,
+                        subtree: true
+                    });
+                })
+                .catch((error) => {
+                    console.error("Failed to retrieve session data...: ", error);
+                });
 
-                // Start observers
                 
             }
         });
 
+        function contextURIParse(playlist_id) {
+            let temp = playlist_id.split('/');
+            temp.shift();
+            return temp.join(':');
+        }
 
         // ========== Player Handlers ==========
 
