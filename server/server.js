@@ -5,8 +5,8 @@ var express = require('express');
 var fs = require('fs');
 var app = express();
 var http = require('https').createServer({
-    key: fs.readFileSync('./keys/key.pem'),
-    cert: fs.readFileSync('./keys/cert.pem')
+    key: fs.readFileSync('./keys/selfsigned.key'),
+    cert: fs.readFileSync('./keys/selfsigned.crt')
 }, app);
 var io = require('socket.io')(http);
 
@@ -27,7 +27,7 @@ const redirectUriParameters = {
     client_id: process.env.SPOTIFY_CLIENT_ID,
     response_type: 'token',
     scope: jssdkscopes.join(' '),
-    redirect_uri: encodeURI(`http://${process.env.SERVER_IP}:${PORT}/`),
+    redirect_uri: encodeURI(`https://${process.env.SERVER_IP}:${PORT}/`),
     show_dialog: true,
 }
 const redirectUri = `https://accounts.spotify.com/authorize?${qs.stringify(redirectUriParameters)}`;
