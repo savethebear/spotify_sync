@@ -2,8 +2,12 @@
 
 var qs = require('querystring');
 var express = require('express');
+var fs = require('fs');
 var app = express();
-var http = require('http').createServer(app);
+var http = require('https').createServer({
+    key: fs.readFileSync('./keys/key.pem'),
+    cert: fs.readFileSync('./keys/cert.pem')
+}, app);
 var io = require('socket.io')(http);
 
 if (process.env.NODE_ENV !== 'production') {
