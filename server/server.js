@@ -4,9 +4,13 @@ var qs = require('querystring');
 var express = require('express');
 var fs = require('fs');
 var app = express();
+
+const key = process.env.CERT_KEY || fs.readFileSync('./keys/selfsigned.key');
+const cert = process.env.CERT_CERT || fs.readFileSync('./keys/selfsigned.crt');
+
 var http = require('https').createServer({
-    key: fs.readFileSync('./keys/selfsigned.key'),
-    cert: fs.readFileSync('./keys/selfsigned.crt')
+    key: key,
+    cert: cert
 }, app);
 var io = require('socket.io')(http);
 
