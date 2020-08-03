@@ -138,13 +138,14 @@ io.on("connection", (socket) => {
         socket.to(room_id).emit('external_play_trigger', play_command);
     });
 
-    socket.on('next_song', (offset) => {
+    socket.on('next_song', (offset, room_id) => {
         console.log("Next song trigger...");
-        socket.broadcast.emit('external_next_song', offset);
+        socket.to(room_id).emit('external_next_song', offset);
     });
 
-    socket.on('prev_song', (offset) => {
+    socket.on('prev_song', (offset, room_id) => {
         console.log("Prev song trigger...");
+        socket.to(room_id).emit('external_previous_song', offset);
     });
 
     socket.on('disconnecting', (reason) => {

@@ -26,12 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
     let socket = io.connect(SERVER_IP, { secure: true });
 
     // ========== FOR DEBUGGING PURPOSE ==========
-    const test_room = 'test_room'
-    socket.emit('join_room', { room_id: test_room }, function (code) {
+    const room_id = 'test_room'
+    socket.emit('join_room', { room_id: room_id }, function (code) {
         if (code === "success") {
-            console.log(`Successfully joined ${test_room}`);
+            console.log(`Successfully joined ${room_id}`);
         } else {
-            console.log(`Failed to join ${test_room}`);
+            console.log(`Failed to join ${room_id}`);
         }
     });
 
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // play observer
                 seeking_data.progress_bar = progress_bar;
                 const play_observer = new MutationObserver(function() {
-                    play_trigger(play_button, "test_room");
+                    play_trigger(play_button, room_id);
                     seek_monitor_setup(play_button, seeking_data, song_list.current_offset)
                 });
                 play_observer.observe(play_button[0], { attributes: true });
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (observer_blocker.override) return;
 
         console.log("next has been triggered...");
-        socket.emit('next_song', offset);
+        socket.emit('next_song', offset, room_id);
     }
 
     function prev_trigger(offset) {
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (observer_blocker.override) return;
 
         console.log("prev has been triggered...");
-        socket.emit('prev_song', offset);
+        socket.emit('prev_song', offset, room_id);
     }
 
     function song_changed(song_list, now_playing) {
