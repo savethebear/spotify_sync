@@ -2,12 +2,12 @@ const CONSTANTS = new ConstantVariables();
 
 document.getElementById("authorise").addEventListener("click", function(e) {
     e.preventDefault();
-    fetch(`https://${CONSTANTS.server_ip}:3000/spotify_authorize`)
+    fetch(`https://${CONSTANTS.server_ip}/spotify_authorize`)
         .then(e => e.json())
         .then(data => {
             chrome.runtime.sendMessage({ get_access_token: true }, function (response) {
                 if (response && parseInt(response.expiry) > Date.now()) {
-                    chrome.tabs.create({ url: `http://${CONSTANTS.server_ip}:3000/`});
+                    chrome.tabs.create({ url: `https://${CONSTANTS.server_ip}/`});
                 } else {
                     console.log(data.redirectUri);
                     chrome.tabs.create({ url: data.redirectUri });

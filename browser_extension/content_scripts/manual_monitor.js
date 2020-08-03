@@ -11,7 +11,7 @@ const SELECTOR_PREV_BUTTON = ".control-button[data-testid='control-button-skip-b
 const CONSTANTS = new ConstantVariables();
 
 // socket server
-const SERVER_IP = `https://${CONSTANTS.server_ip}:3000`;
+const SERVER_IP = `https://${CONSTANTS.server_ip}`;
 
 document.addEventListener('DOMContentLoaded', () => {
     // save access token
