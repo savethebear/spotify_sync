@@ -64,9 +64,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupListeners() {
         // ========== Session data handlers ==========
         socket.on("get_current_session", (socket_id) => {
-            console.log(seeking_data);
             socket.emit('send_session_data', socket_id, 
-                new SessionData(song_list.playlist_id, song_list.current_offset, seeking_data.progress_bar.text()));
+                new SessionData(song_list.playlist_id, song_list.current_offset, parseTimeToMS(seeking_data.progress_bar.text())));
         });
         
         socket.on("retrieve_session_data", (session_data) => {
@@ -100,6 +99,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 observer_blocker.override_song_change = true;
                 if (offset !== song_list.current_offset) {
                     $(SELECTOR_NEXT_BUTTON).first().click();
+                }
+            });
+        });
+
+        // Previous button
+        socket.on("external_previous_song", (offset) => {
+            observer_blocker.executeEvent(function () {
+                observer_blocker.override_song_change = true;
+                if (offset !== song_list.current_offset) {
+                    $(SELECTOR_PREV_BUTTON).first().click();
                 }
             });
         });
@@ -239,18 +248,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         seeking_data.past_time = observe_time;
+    }
 
-        function parseTimeToMS(time) {
-            const time_sections = time.split(":");
-            let ms = 0;
-            let multiply = 1000;
-            for (let i = time_sections.length - 1; i >= 0; i--) {
-                ms += parseInt(time_sections[i]) * multiply;
-                multiply *= 60;
-            }
-
-            return ms;
+    function parseTimeToMS(time) {
+        const time_sections = time.split(":");
+        let ms = 0;
+        let multiply = 1000;
+        for (let i = time_sections.length - 1; i >= 0; i--) {
+            ms += parseInt(time_sections[i]) * multiply;
+            multiply *= 60;
         }
+
+        return ms;
     }
 
     async function init_user_playback(init_session_data) {
