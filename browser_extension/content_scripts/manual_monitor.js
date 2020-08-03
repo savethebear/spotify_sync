@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Play button
         socket.on("external_play_trigger", (play_command) => {
             observer_blocker.executeEvent(function() {
-                const play_button = $(SELECTOR_PLAY_BUTTON).first();
+                const play_button = $(SELECTOR_PLAY_BUTTON).length > 0 ? $(SELECTOR_PLAY_BUTTON).first() : $(SELECTOR_PAUSE_BUTTON).first();
                 if ((play_command === "pause" && play_button.attr("data-testid") === "control-button-pause")
                     || (play_command === "play" && play_button.attr("data-testid") === "control-button-play")) {
                     play_button.click();
@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // play observer
                 seeking_data.progress_bar = progress_bar;
                 const play_observer = new MutationObserver(function() {
-                    play_trigger(play_button);
+                    play_trigger(play_button, "test_room");
                     seek_monitor_setup(play_button, seeking_data, song_list.current_offset)
                 });
                 play_observer.observe(play_button[0], { attributes: true });
