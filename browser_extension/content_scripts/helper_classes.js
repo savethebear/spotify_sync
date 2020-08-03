@@ -66,7 +66,13 @@ class SongList {
             }
             link = data.next;
         }
-        if (current_song) this.current_offset = this.getOffset(current_song);
+        if (current_song) {
+            if (typeof current_song === "number") {
+                this.current_offset = current_song;
+            } else {
+                this.current_offset = this.getOffset(current_song);
+            }
+        }
     }
 
     parsePlaylistId() {

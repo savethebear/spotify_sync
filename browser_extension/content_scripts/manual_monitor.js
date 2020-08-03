@@ -40,14 +40,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const observer_blocker = new ObserverBlocker(); // variable representing source of player interaction
     const song_list = new SongList();  // Contains list of songs for current playlist
     const seeking_data = new SeekMonitorData();  // object for seeking
-    let session_data = null;
+    let init_session_data = null;
 
     // Wait untils controls are visible
     const observer = new MutationObserver(function (mutation, me) {
         let controls = $(".player-controls");
         if (controls.length > 0) {
             try {
-                setupObservers(session_data);
+                setupObservers(init_session_data);
+
+                setTimeout(function() {
+                    init_user_playback(init_session_data);
+                }, 1000);
             } catch (error) {
                 console.log(error);
             }
@@ -69,42 +73,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (session_data.playlist_id && session_data.song_offset) {
                 console.log(session_data);
                 // Init session
-                let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
-
-                const data = {
-                    context_uri: `spotify:${contextURIParse(session_data.playlist_id)}`,
-                    offset: { position: parseInt(session_data.song_offset) },
-                    position_ms: parseInt(session_data.milliseconds)
-                };
-
-                fetch(`https://api.spotify.com/v1/me/player/play`, {
-                    method: "PUT",
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(response => {
-                    console.log(response);
-                    // Start observers
-                    observer.observe(document, {
-                        childList: true,
-                        subtree: true
-                    });
-                })
-                .catch((error) => {
-                    console.error("Failed to retrieve session data...: ", error);
+                init_session_data = session_data;
+                observer.observe(document, {
+                    childList: true,
+                    subtree: true
                 });
-
-                
             }
         });
-
-        function contextURIParse(playlist_id) {
-            let temp = playlist_id.split('/');
-            temp.shift();
-            return temp.join(':');
-        }
 
         // ========== Player Handlers ==========
 
@@ -130,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function setupObservers() {
+    function setupObservers(session_data) {
         // Play
         let play_button = $(".control-button[data-testid='control-button-pause']");
         if (play_button.length == 0) play_button = $(".control-button[data-testid='control-button-play']");
@@ -147,7 +122,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (now_playing.length > 0) {
                 // init the song list
-                song_changed(song_list, now_playing, progress_bar);
+                if (session_data) {
+                    song_list.updateSongList(session_data.playlist_id, session_data.song_offset);
+                } else {
+                    song_changed(song_list, now_playing, progress_bar);
+                }
 
                 song_changed_observer = new MutationObserver(function () {
                     song_changed(song_list, now_playing)
@@ -271,6 +250,57 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             return ms;
+        }
+    }
+
+    async function init_user_playback(init_session_data) {
+        let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
+
+        let response = await fetch(`https://api.spotify.com/v1/me/player/devices`, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }).catch(error => {
+            console.log(error);
+        });    
+        let data = await response.json();
+        console.log(data);
+        let active_device = null;
+        let web_player = null;
+        data.devices.forEach(elem => {
+            if (elem.is_active) {
+                active_device = elem;
+            }
+            if (elem.name.includes("Web Player")) {
+                web_player = elem;
+            }
+        });
+
+        play(active_device != null ? active_device.id : web_player.id);
+
+        function play(device_id) {
+            const data = {
+                context_uri: `spotify:${contextURIParse(init_session_data.playlist_id)}`,
+                offset: { position: parseInt(init_session_data.song_offset) },
+                position_ms: parseInt(init_session_data.milliseconds)
+            };
+
+            fetch(`https://api.spotify.com/v1/me/player/play?device_id=${device_id}`, {
+                method: "PUT",
+                headers: {
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            }).catch((error) => {
+                console.error("Failed to retrieve session data...: ", error);
+            });
+        }
+
+        function contextURIParse(playlist_id) {
+            let temp = playlist_id.split('/');
+            temp.shift();
+            return temp.join(':');
         }
     }
 });
