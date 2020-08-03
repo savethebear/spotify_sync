@@ -26,7 +26,7 @@ var spotifyApi = new SpotifyWebApi({
     clientId: process.env.SPOTIFY_CLIENT_ID,
     clientSecret: process.env.SPOTIFY_CLIENT_SECRET,
 });
-const jssdkscopes = ["streaming", "user-read-email", "user-read-private"];
+const jssdkscopes = ["streaming", "user-read-email", "user-read-private", "user-read-playback-state"];
 const redirectUriParameters = {
     client_id: process.env.SPOTIFY_CLIENT_ID,
     response_type: 'token',
