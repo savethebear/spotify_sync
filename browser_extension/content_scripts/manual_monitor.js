@@ -145,7 +145,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 // play observer
                 seeking_data.progress_bar = progress_bar;
                 const play_observer = new MutationObserver(function() {
-                    play_trigger(play_button, room_id);
+                    if (!play_button.hasClass("control-button--loading")) {
+                        play_trigger(play_button, room_id);
+                    }
                     seek_monitor_setup(play_button, seeking_data, song_list.current_offset)
                 });
                 play_observer.observe(play_button[0], { attributes: true });
