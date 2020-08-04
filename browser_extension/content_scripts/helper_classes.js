@@ -125,7 +125,11 @@ class ObserverBlocker {
         if (typeof event !== "function") return;
         this.override = true;
         event();
-        this.override = false;
+
+        // delay unlocking the override
+        setTimeout(function() {
+            this.override = false;
+        }, 500);
     }
 }
 
