@@ -112,6 +112,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
+
+        // Seek handle
+        socket.on("external_seek_trigger", (cur_timestamp) => {
+            observer_blocker.executeEvent(function() {
+                const total_duration = song_list.getCurrentEndTime();
+                const time_left_percentage = (total_duration - cur_timestamp) / total_duration;
+                const progress_bar = session_data.progress_bar.find(".progress-bar");
+
+                const click_event = $.Event("click");
+                click_event.clientX = progress_bar.width() * time_left_percentage;
+                click_event.clientY = progress_bar.height() / 2;
+
+                progress_bar.trigger(click_event);
+            });
+        });
     }
 
     function setupObservers(session_data) {
@@ -247,6 +262,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Math.abs(observe_time - seeking_data.past_time) > time_range) {
             // seek
             console.log("Seek Detected...");
+            if (!observer_blocker.override) {
+                socket.emit("seek_trigger", observe_time, room_id);
+            }
         }
 
         seeking_data.past_time = observe_time;
@@ -276,7 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log(error);
         });    
         let data = await response.json();
-        console.log(data);
         let active_device = null;
         let web_player = null;
         data.devices.forEach(elem => {

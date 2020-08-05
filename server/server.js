@@ -148,6 +148,11 @@ io.on("connection", (socket) => {
         socket.to(room_id).emit('external_previous_song', offset);
     });
 
+    socket.on('seek_trigger', (cur_timestamp, room_id) => {
+        console.log("Seek trigger...");
+        socket.to(room_id).emit('external_seek_trigger', cur_timestamp);
+    });
+
     socket.on('disconnecting', (reason) => {
         for (let key of Object.keys(socket.rooms)) {
             const room = active_rooms[key];

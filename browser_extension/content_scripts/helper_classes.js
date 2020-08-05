@@ -82,8 +82,12 @@ class SongList {
         return modified;
     }
 
-    getCurrentEndTime() {
+    getCurrentSong() {
+        return this.song_list[this.current_offset];
+    }
 
+    getCurrentEndTime() {
+        return this.getCurrentSong().duration;
     }
 }
 
