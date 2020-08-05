@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
             observer_blocker.executeEvent(function() {
                 const total_duration = song_list.getCurrentEndTime();
                 const time_left_percentage = (total_duration - cur_timestamp) / total_duration;
-                const progress_bar = session_data.progress_bar.find(".progress-bar");
+                const progress_bar = seeking_data.progress_bar.find(".progress-bar");
 
                 const click_event = $.Event("click");
                 click_event.clientX = progress_bar.width() * time_left_percentage;
