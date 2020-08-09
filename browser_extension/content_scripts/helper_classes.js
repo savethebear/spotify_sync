@@ -123,15 +123,16 @@ class ObserverBlocker {
     constructor() {
         this.override = false;
         this.override_song_change = false;
+        this.timeout;
     }
-
+     
     executeEvent(event) {
         if (typeof event !== "function") return;
         this.override = true;
         event();
 
         // delay unlocking the override
-        setTimeout(function() {
+        this.timeout = setTimeout(() => {
             this.override = false;
         }, 500);
     }
