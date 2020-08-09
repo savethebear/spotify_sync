@@ -115,17 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Seek handle
         socket.on("external_seek_trigger", (cur_timestamp) => {
-            observer_blocker.executeEvent(function() {
-                const total_duration = song_list.getCurrentEndTime();
-                const time_left_percentage = (total_duration - cur_timestamp) / total_duration;
-                const progress_bar = seeking_data.progress_bar.parent().find(".progress-bar");
-
-                const click_event = $.Event("mousedown");
-                click_event.clientX = progress_bar.width() * time_left_percentage;
-                click_event.clientY = progress_bar.height() / 2;
-
-                progress_bar.trigger(click_event);
-            });
+            seek(cur_timestamp);
         });
     }
 
@@ -262,8 +252,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Math.abs(observe_time - seeking_data.past_time) > time_range) {
             // seek
             console.log("Seek Detected...");
-            // $("button[aria-label='Change progress']").mousedown();
-            // console.log("mousedown progressing...");
             if (!observer_blocker.override) {
                 socket.emit("seek_trigger", observe_time, room_id);
             }
@@ -332,5 +320,16 @@ document.addEventListener('DOMContentLoaded', () => {
             temp.shift();
             return temp.join(':');
         }
+    }
+
+    function seek(duration) {
+        let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
+        observer_blocker.override = true;
+        fetch(`https://api.spotify.com/v1/me/player/seek?position_ms=${duration}`, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }).then((response) => observer_blocker.override = false);
     }
 });
