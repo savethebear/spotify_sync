@@ -118,9 +118,9 @@ document.addEventListener('DOMContentLoaded', () => {
             observer_blocker.executeEvent(function() {
                 const total_duration = song_list.getCurrentEndTime();
                 const time_left_percentage = (total_duration - cur_timestamp) / total_duration;
-                const progress_bar = seeking_data.progress_bar.find(".progress-bar");
+                const progress_bar = seeking_data.progress_bar.parent().find(".progress-bar");
 
-                const click_event = $.Event("click");
+                const click_event = $.Event("mousedown");
                 click_event.clientX = progress_bar.width() * time_left_percentage;
                 click_event.clientY = progress_bar.height() / 2;
 
@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (play_button.attr("data-testid") === "control-button-pause") {
             seeking_data.seeking_interval = setInterval(function () {
                 seek_monitor(seeking_data, current_offset);
-            }, 1000);
+            }, 500);
         }
     }
 
@@ -262,6 +262,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (Math.abs(observe_time - seeking_data.past_time) > time_range) {
             // seek
             console.log("Seek Detected...");
+            // $("button[aria-label='Change progress']").mousedown();
+            // console.log("mousedown progressing...");
             if (!observer_blocker.override) {
                 socket.emit("seek_trigger", observe_time, room_id);
             }
