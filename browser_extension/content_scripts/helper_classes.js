@@ -134,7 +134,7 @@ class ObserverBlocker {
         // delay unlocking the override
         this.timeout = setTimeout(() => {
             this.override = false;
-        }, 500);
+        }, 200);
     }
 }
 

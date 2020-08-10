@@ -295,31 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        play(active_device != null ? active_device.id : web_player.id);
-
-        function play(device_id) {
-            const data = {
-                context_uri: `spotify:${contextURIParse(init_session_data.playlist_id)}`,
-                offset: { position: parseInt(init_session_data.song_offset) },
-                position_ms: parseInt(init_session_data.milliseconds)
-            };
-
-            fetch(`https://api.spotify.com/v1/me/player/play?device_id=${device_id}`, {
-                method: "PUT",
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify(data)
-            }).catch((error) => {
-                console.error("Failed to retrieve session data...: ", error);
-            });
-        }
-
-        function contextURIParse(playlist_id) {
-            let temp = playlist_id.split('/');
-            temp.shift();
-            return temp.join(':');
-        }
+        play(active_device != null ? active_device.id : web_player.id, init_session_data);
     }
 
     function seek(duration) {
@@ -331,5 +307,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 Authorization: `Bearer ${token}`
             }
         }).then((response) => observer_blocker.override = false);
+    }
+
+    function play(device_id, session_data) {
+        let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
+        
+        if (!session_data.playlist_id) {
+            console.log("session_data invalid...");
+            return;
+        }
+        
+        const data = { context_uri: `spotify:${contextURIParse(session_data.playlist_id)}` };
+        if (session_data.song_offset) data["offset"] = { position: parseInt(session_data.song_offset) };
+        if (session_data.milliseconds) data["position_ms"] = parseInt(session_data.milliseconds);
+
+        let url = `https://api.spotify.com/v1/me/player/play`;
+        if (device_id) url + `?device_id=${device_id}`;
+
+        fetch(url, {
+            method: "PUT",
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(data)
+        }).catch((error) => {
+            console.error("Failed to retrieve session data...: ", error);
+        });
+
+        function contextURIParse(playlist_id) {
+            let temp = playlist_id.split('/');
+            temp.shift();
+            return temp.join(':');
+        }
     }
 });
