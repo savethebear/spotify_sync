@@ -322,7 +322,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (session_data.milliseconds) data["position_ms"] = parseInt(session_data.milliseconds);
 
         let url = `https://api.spotify.com/v1/me/player/play`;
-        if (device_id) url + `?device_id=${device_id}`;
+        if (device_id) url += `?device_id=${device_id}`;
 
         fetch(url, {
             method: "PUT",
