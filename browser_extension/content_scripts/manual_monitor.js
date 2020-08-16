@@ -339,7 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         const play_button = $(SELECTOR_PLAY_BUTTON).length > 0 ? $(SELECTOR_PLAY_BUTTON).first() : $(SELECTOR_PAUSE_BUTTON).first();
         const current_play_state = play_button.attr("data-testid") === "control-button-pause" ? "play" : "pause";
-        if (session_data && session_data.play_state !== current_play_state) {
+        if (session_data.play_state && session_data.play_state !== current_play_state) {
             play_button.click();
         }
 
