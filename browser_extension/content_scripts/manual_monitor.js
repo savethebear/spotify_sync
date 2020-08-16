@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).then((response) => observer_blocker.override = false);
     }
 
-    function play(device_id, session_data) {
+    async function play(device_id, session_data) {
         let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
         
         if (!session_data.playlist_id) {
@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let url = `https://api.spotify.com/v1/me/player/play`;
         if (device_id) url += `?device_id=${device_id}`;
 
-        fetch(url, {
+        await fetch(url, {
             method: "PUT",
             headers: {
                 Authorization: `Bearer ${token}`
@@ -337,6 +337,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }).catch((error) => {
             console.error("Failed to retrieve session data...: ", error);
         });
+        const play_button = $(SELECTOR_PLAY_BUTTON).length > 0 ? $(SELECTOR_PLAY_BUTTON).first() : $(SELECTOR_PAUSE_BUTTON).first();
+        const current_play_state = play_button.attr("data-testid") === "control-button-pause" ? "play" : "pause";
+        if (session_data && session_data.play_state !== current_play_state) {
+            play_button.click();
+        }
 
         function contextURIParse(playlist_id) {
             let temp = playlist_id.split('/');
