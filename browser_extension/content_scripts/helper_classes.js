@@ -126,15 +126,16 @@ class ObserverBlocker {
         this.timeout;
     }
      
-    executeEvent(event) {
+    executeEvent(event, delay) {
         if (typeof event !== "function") return;
         this.override = true;
         event();
 
         // delay unlocking the override
+        const default_delay = 200;
         this.timeout = setTimeout(() => {
             this.override = false;
-        }, 200);
+        }, delay ? delay : default_delay);
     }
 }
 
