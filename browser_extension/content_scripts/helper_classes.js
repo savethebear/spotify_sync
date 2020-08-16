@@ -132,7 +132,7 @@ class ObserverBlocker {
         event();
 
         // delay unlocking the override
-        const default_delay = 200;
+        const default_delay = 500;
         this.timeout = setTimeout(() => {
             this.override = false;
         }, delay ? delay : default_delay);
