@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (session_data) {
                     song_list.updateSongList(session_data.playlist_id, session_data.song_offset);
                 } else {
-                    song_changed(song_list, now_playing, progress_bar);
+                    song_changed(song_list, now_playing);
                 }
 
                 song_changed_observer = new MutationObserver(function () {
