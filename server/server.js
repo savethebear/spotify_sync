@@ -144,7 +144,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on('prev_song', (offset, room_id) => {
-        console.log("Prev song trigger...");
+        console.log(`Prev song trigger for offset ${offset}...`);
         socket.to(room_id).emit('external_previous_song', offset);
     });
 
