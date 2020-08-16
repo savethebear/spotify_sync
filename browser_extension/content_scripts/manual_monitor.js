@@ -64,8 +64,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupListeners() {
         // ========== Session data handlers ==========
         socket.on("get_current_session", (socket_id) => {
+            const play_state = $(SELECTOR_PLAY_BUTTON).length > 0 ? "play" : "pause";
             socket.emit('send_session_data', socket_id, 
-                new SessionData(song_list.playlist_id, song_list.current_offset, parseTimeToMS(seeking_data.progress_bar.text())));
+                new SessionData(song_list.playlist_id, song_list.current_offset, parseTimeToMS(seeking_data.progress_bar.text()),
+                    play_state));
         });
         
         socket.on("retrieve_session_data", (session_data) => {
@@ -295,7 +297,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        play(active_device != null ? active_device.id : web_player.id, init_session_data);
+        observer_blocker.executeEvent(function() {
+            play(active_device != null ? active_device.id : web_player.id, init_session_data);
+        });
     }
 
     function seek(duration) {

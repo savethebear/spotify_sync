@@ -112,7 +112,8 @@ io.on("connection", (socket) => {
                         {
                             playlist_id: "/playlist/2LbdIXB6JzgsEgNk90Bxe3", 
                             song_offset: 2,
-                            milliseconds: 1000
+                            milliseconds: 1000,
+                            play_state: "pause"
                         });
                 } else {
                     io.to(random_user).emit('get_current_session', socket.id);

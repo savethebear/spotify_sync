@@ -143,10 +143,11 @@ class ObserverBlocker {
  * Contains information related to the current session of the room
  */
 class SessionData {
-    constructor(playlist_id, song_offset, milliseconds) {
+    constructor(playlist_id, song_offset, milliseconds, play_state) {
         this.playlist_id = playlist_id;
         this.song_offset = song_offset;
         this.milliseconds = milliseconds;
+        this.play_state = play_state;
     }
 }
 
