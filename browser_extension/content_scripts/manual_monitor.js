@@ -110,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
             observer_blocker.executeEvent(function () {
                 observer_blocker.override_song_change = true;
                 if (offset !== song_list.current_offset) {
-                    $(SELECTOR_PREV_BUTTON).first().click();
+                    play(null, new SessionData(song_list.playlist_id, offset, 0));
                 }
             });
         });
