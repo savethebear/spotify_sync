@@ -107,15 +107,7 @@ io.on("connection", (socket) => {
                 //     return;
                 // }
                 console.log(current_users);
-                if (current_users.length === 0) {
-                    io.to(socket.id).emit('retrieve_session_data', 
-                        {
-                            playlist_id: "/playlist/2LbdIXB6JzgsEgNk90Bxe3", 
-                            song_offset: 2,
-                            milliseconds: 1000,
-                            play_state: "pause"
-                        });
-                } else {
+                if (current_users.length !== 0) {
                     io.to(random_user).emit('get_current_session', socket.id);
                 }
                 callback(success);
