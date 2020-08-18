@@ -12,16 +12,19 @@ const CONSTANTS = new ConstantVariables();
 
 // socket server
 const SERVER_IP = `https://${CONSTANTS.server_ip}`;
-let socket = io.connect(SERVER_IP, { secure: true });
+let socket;
 
 document.addEventListener('DOMContentLoaded', () => {
     // save access token
     chrome.runtime.sendMessage({ get_access_token: true }, function(response) {
         if (!response.access_token) {
             alert("Missing Authentication...");
+            return;
         }
         localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_KEY, response.access_token);
         localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, response.expiry);
+        
+        socket = io.connect(SERVER_IP, { secure: true });
         setup();
     });
 });
@@ -168,7 +171,7 @@ function setup() {
     function play_trigger(play_button, room_id) {
         if (!observer_blocker.override) {
             console.log("play has been triggered...");
-            
+
             let mode = play_button.attr("data-testid") === "control-button-pause" ? "play" : "pause";
             socket.emit('play_trigger', mode, room_id);
         }

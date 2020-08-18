@@ -22,6 +22,7 @@
             "js": [
                 "content_scripts/jquery-3.5.1.slim.js",
                 "content_scripts/socket.io.js",
+                "env_vars.js",
                 "content_scripts/helper_classes.js",
                 "content_scripts/manual_monitor.js"
             ]

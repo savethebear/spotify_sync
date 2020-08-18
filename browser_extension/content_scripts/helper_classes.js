@@ -150,9 +150,3 @@ class SessionData {
         this.play_state = play_state;
     }
 }
-
-class ConstantVariables {
-    constructor() {
-        this.server_ip = "localhost";
-    }
-}
