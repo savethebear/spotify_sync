@@ -12,6 +12,7 @@ const CONSTANTS = new ConstantVariables();
 
 // socket server
 const SERVER_IP = `https://${CONSTANTS.server_ip}`;
+let socket = io.connect(SERVER_IP, { secure: true });
 
 document.addEventListener('DOMContentLoaded', () => {
     // save access token
@@ -21,10 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_KEY, response.access_token);
         localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, response.expiry);
+        setup();
     });
-    
-    let socket = io.connect(SERVER_IP, { secure: true });
+});
 
+function setup() {
     // ========== FOR DEBUGGING PURPOSE ==========
     const room_id = 'test_room'
     socket.emit('join_room', { room_id: room_id }, function (code) {
@@ -48,10 +50,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (controls.length > 0) {
             try {
                 setupObservers(init_session_data);
-
-                setTimeout(function() {
-                    init_user_playback(init_session_data);
-                }, 1000);
             } catch (error) {
                 console.log(error);
             }
@@ -59,26 +57,27 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
     });
-    
+    observer.observe(document, {
+        childList: true,
+        subtree: true
+    });
+
     setupListeners();
     function setupListeners() {
         // ========== Session data handlers ==========
         socket.on("get_current_session", (socket_id) => {
             const play_state = $(SELECTOR_PLAY_BUTTON).length > 0 ? "play" : "pause";
-            socket.emit('send_session_data', socket_id, 
+            socket.emit('send_session_data', socket_id,
                 new SessionData(song_list.playlist_id, song_list.current_offset, parseTimeToMS(seeking_data.progress_bar.text()),
                     play_state));
         });
-        
+
         socket.on("retrieve_session_data", (session_data) => {
             if (session_data.playlist_id && session_data.song_offset) {
                 console.log(session_data);
                 // Init session
                 init_session_data = session_data;
-                observer.observe(document, {
-                    childList: true,
-                    subtree: true
-                });
+                init_user_playback(init_session_data);
             }
         });
 
@@ -86,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Play button
         socket.on("external_play_trigger", (play_command) => {
-            observer_blocker.executeEvent(function() {
+            observer_blocker.executeEvent(function () {
                 const play_button = $(SELECTOR_PLAY_BUTTON).length > 0 ? $(SELECTOR_PLAY_BUTTON).first() : $(SELECTOR_PAUSE_BUTTON).first();
                 if ((play_command === "pause" && play_button.attr("data-testid") === "control-button-pause")
                     || (play_command === "play" && play_button.attr("data-testid") === "control-button-play")) {
@@ -97,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Next button
         socket.on("external_next_song", (offset) => {
-            observer_blocker.executeEvent(function() {
+            observer_blocker.executeEvent(function () {
                 observer_blocker.override_song_change = true;
                 if (offset !== song_list.current_offset) {
                     $(SELECTOR_NEXT_BUTTON).first().click();
@@ -116,8 +115,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Seek handle
-        socket.on("external_seek_trigger", (cur_timestamp) => {
-            seek(cur_timestamp);
+        socket.on("external_seek_trigger", (modified_timestamp) => {
+            const current_timestamp = parseTimeToMS(seeking_data.progress_bar.text());
+            seek(modified_timestamp);
         });
     }
 
@@ -132,7 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let song_changed_observer;
 
         // Wait until player is visible
-        let interval = setInterval(function() {
+        let interval = setInterval(function () {
             now_playing = $(".now-playing");
             progress_bar = $(".playback-bar div:first-child").first();
 
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // play observer
                 seeking_data.progress_bar = progress_bar;
-                const play_observer = new MutationObserver(function() {
+                const play_observer = new MutationObserver(function () {
                     if (!play_button.attr("class").includes("control-button--loading")) {
                         play_trigger(play_button, room_id);
                     }
@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function play_trigger(play_button, room_id) {
         if (!observer_blocker.override) {
             console.log("play has been triggered...");
-    
+            
             let mode = play_button.attr("data-testid") === "control-button-pause" ? "play" : "pause";
             socket.emit('play_trigger', mode, room_id);
         }
@@ -218,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
             song_list.updateSongList(current_link, current_song);
             return;
         }
-        
+
         // check if the album has changed
         if (current_link !== song_list.playlist_id) {
             // playlist changed...
@@ -237,9 +237,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function seek_monitor(seeking_data, current_offset) {   
+    function seek_monitor(seeking_data, current_offset) {
         // Event was triggered from socket
-        if (observer_blocker.override) return;   
+        if (observer_blocker.override) return;
 
         if (!seeking_data.progress_bar) return;
         if (!seeking_data.past_time) seeking_data.past_time = parseTimeToMS(seeking_data.progress_bar.text());
@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }).catch(error => {
             console.log(error);
-        });    
+        });
         let data = await response.json();
         let active_device = null;
         let web_player = null;
@@ -297,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        observer_blocker.executeEvent(function() {
+        observer_blocker.executeEvent(function () {
             play(active_device != null ? active_device.id : web_player.id, init_session_data);
         });
     }
@@ -305,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function seek(duration) {
         let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
         observer_blocker.override = true;
-        fetch(`https://api.spotify.com/v1/me/player/seek?position_ms=${duration}`, {
+        fetch(`https://api.spotify.com/v1/me/player/seek?position_ms=${parseInt(duration)}`, {
             method: "PUT",
             headers: {
                 Authorization: `Bearer ${token}`
@@ -315,12 +315,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function play(device_id, session_data) {
         let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
-        
+
         if (!session_data.playlist_id) {
             console.log("session_data invalid...");
             return;
         }
-        
+
         const data = { context_uri: `spotify:${contextURIParse(session_data.playlist_id)}` };
         if (session_data.song_offset) data["offset"] = { position: parseInt(session_data.song_offset) };
         if (session_data.milliseconds) data["position_ms"] = parseInt(session_data.milliseconds);
@@ -349,4 +349,4 @@ document.addEventListener('DOMContentLoaded', () => {
             return temp.join(':');
         }
     }
-});
+}
