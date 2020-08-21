@@ -160,7 +160,7 @@ function setup() {
                     }
                     seek_monitor_setup(play_button, seeking_data, song_list.current_offset)
                 });
-                play_observer.observe(play_button[0], { attributes: true });
+                play_observer.observe(play_button[0], { attributeFilter:["title"], attributes: true });
 
                 console.log("Done..");
                 clearInterval(interval);
