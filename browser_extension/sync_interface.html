@@ -36,6 +36,7 @@
 </head>
 
 <body>
+    <script src="content_scripts/jquery-3.5.1.slim.js"></script>
     <button id="authorise">Authorise User</button>
     <div class="outer_buttons">
         <div class="inline_row">
@@ -47,12 +48,17 @@
     <div id="room_id_input" style="display:none;">
         <form>
             <label style="font-weight: bold;">Room ID:</label>
-            <input type="text" style="width: 100%; box-sizing: border-box;">
+            <input id="room_user_input" type="text" style="width: 100%; box-sizing: border-box;">
         </form>
         <form class="form-inline" style="margin-top: 5px">
             <input id="cancel_room_id" type="button" value="Cancel">
             <input id="submit_room_id" type="submit">
         </form>
+    </div>
+
+    <div id="active_room_container" style="display:none;">
+        <label style="font-weight: bold;">Room: </label>
+        <div id="active_room"></div>
     </div>
 
     <script src="env_vars.js"></script>
