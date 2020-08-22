@@ -145,7 +145,7 @@ function setup(room_input = "test_room") {
         socket.on("external_seek_trigger", (modified_timestamp) => {
             const current_timestamp = parseTimeToMS(seeking_data.progress_bar.text());
             const time_range = 2000;
-            if (Math.abs(observe_time - seeking_data.past_time) > time_range) {
+            if (Math.abs(modified_timestamp - current_timestamp) > time_range) {
                 seek(modified_timestamp);
             }
         });

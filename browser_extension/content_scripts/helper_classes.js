@@ -61,8 +61,11 @@ class SongList {
             const data = await response.json();
             for (const song of data.items) {
                 const cur_track = song.track;
-                this.song_list.push(new Song(cur_track.name, cur_track.artists[0].name,
-                    cur_track.duration_ms, cur_track.available_markets));
+                // DEBUG CHECK (REMOVE AS SOON AS POSSIBLE)
+                if (cur_track.available_markets.includes("HK") && cur_track.available_markets.includes("SG")) {
+                    this.song_list.push(new Song(cur_track.name, cur_track.artists[0].name,
+                        cur_track.duration_ms, cur_track.available_markets));
+                }
             }
             link = data.next;
         }
