@@ -337,7 +337,10 @@ function setup(room_input = "test_room") {
             headers: {
                 Authorization: `Bearer ${token}`
             }
-        }).then((response) => observer_blocker.override = false);
+        }).then((response) => {
+            observer_blocker.override = false
+            seeking_data.past_time = duration;
+        });
     }
 
     async function play(device_id, session_data) {
