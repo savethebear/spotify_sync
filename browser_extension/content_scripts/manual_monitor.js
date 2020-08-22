@@ -85,7 +85,7 @@ function setup(room_input = "test_room") {
     function setupListeners() {
         // ========== Session data handlers ==========
         socket.on("get_current_session", (socket_id) => {
-            const play_state = $(SELECTOR_PLAY_BUTTON).length > 0 ? "play" : "pause";
+            const play_state = $(SELECTOR_PLAY_BUTTON).length > 0 ? "pause" : "play";
             socket.emit('send_session_data', socket_id,
                 new SessionData(song_list.playlist_id, song_list.current_offset, parseTimeToMS(seeking_data.progress_bar.text()),
                     play_state));
@@ -174,7 +174,7 @@ function setup(room_input = "test_room") {
                     if (!play_button.attr("class").includes("control-button--loading")) {
                         play_trigger(play_button, room_id);
                     }
-                    seek_monitor_setup(play_button, seeking_data, song_list.current_offset)
+                    seek_monitor_setup(play_button, seeking_data)
                 });
                 play_observer.observe(play_button[0], { attributeFilter:["title"], attributes: true });
 
@@ -193,13 +193,13 @@ function setup(room_input = "test_room") {
         }
     }
 
-    function seek_monitor_setup(play_button, seeking_data, current_offset) {
+    function seek_monitor_setup(play_button, seeking_data) {
         clearInterval(seeking_data.seeking_interval);
 
         // start interval if currently playing
         if (play_button.attr("data-testid") === "control-button-pause") {
             seeking_data.seeking_interval = setInterval(function () {
-                seek_monitor(seeking_data, current_offset);
+                seek_monitor(seeking_data);
             }, 500);
         }
     }
@@ -257,14 +257,14 @@ function setup(room_input = "test_room") {
         }
     }
 
-    function seek_monitor(seeking_data, current_offset) {
+    function seek_monitor(seeking_data) {
         // Event was triggered from socket
         if (observer_blocker.override) return;
 
         if (!seeking_data.progress_bar) return;
         if (!seeking_data.past_time) seeking_data.past_time = parseTimeToMS(seeking_data.progress_bar.text());
-        if (!seeking_data.observe_offset || seeking_data.observe_offset !== current_offset) {
-            seeking_data.observe_offset = current_offset;
+        if (!seeking_data.observe_offset || seeking_data.observe_offset !== song_list.current_offset) {
+            seeking_data.observe_offset = song_list.current_offset;
             seeking_data.past_time = parseTimeToMS(seeking_data.progress_bar.text());
             return;
         }
