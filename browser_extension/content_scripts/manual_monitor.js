@@ -115,20 +115,24 @@ function setup(room_input = "test_room") {
 
         // Next button
         socket.on("external_next_song", (offset) => {
+            console.log("next recieved...");
             observer_blocker.executeEvent(function () {
                 observer_blocker.override_song_change = true;
                 if (offset !== song_list.current_offset) {
                     $(SELECTOR_NEXT_BUTTON).first().click();
+                    song_list.current_offset = offset;
                 }
             });
         });
 
         // Previous button
         socket.on("external_previous_song", (offset) => {
+            console.log("previous revieved...");
             observer_blocker.executeEvent(function () {
                 observer_blocker.override_song_change = true;
                 if (offset !== song_list.current_offset) {
                     play(null, new SessionData(song_list.playlist_id, offset, 0));
+                    song_list.current_offset = offset;
                 }
             });
         });
