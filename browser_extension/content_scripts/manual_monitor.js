@@ -59,22 +59,27 @@ function setup(room_input = "test_room") {
     let init_session_data = null;
 
     // Wait untils controls are visible
-    const observer = new MutationObserver(function (mutation, me) {
-        let controls = $(".player-controls");
-        if (controls.length > 0) {
-            try {
-                setupObservers(init_session_data);
-            } catch (error) {
-                console.log(error);
+    let controls = $(".player-controls");
+    if (controls.length === 0) {
+        const observer = new MutationObserver(function (mutation, me) {
+            controls = $(".player-controls");
+            if (controls.length > 0) {
+                try {
+                    setupObservers(init_session_data);
+                } catch (error) {
+                    console.log(error);
+                }
+                me.disconnect();
+                return;
             }
-            me.disconnect();
-            return;
-        }
-    });
-    observer.observe(document, {
-        childList: true,
-        subtree: true
-    });
+        });
+        observer.observe(document, {
+            childList: true,
+            subtree: true
+        });
+    } else {
+        setupObservers(init_session_data);
+    }
 
     setupListeners();
     function setupListeners() {
@@ -230,6 +235,7 @@ function setup(room_input = "test_room") {
         if (song_list.song_list.length == 0) {
             // init song list object
             song_list.updateSongList(current_link, current_song);
+            console.log(`init song list for id ${current_link}...`);
             return;
         }
 
