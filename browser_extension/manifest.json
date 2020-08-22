@@ -3,7 +3,9 @@
     "version": "1.0",
     "description": "Sync your music with your friends!",
     "permissions": [
-        "storage"
+        "storage",
+        "tabs",
+        "https://open.spotify.com/*"
     ],
     "background": {
         "scripts": [
