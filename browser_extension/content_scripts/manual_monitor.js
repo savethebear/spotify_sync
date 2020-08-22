@@ -8,6 +8,10 @@ const SELECTOR_PAUSE_BUTTON = ".control-button[data-testid='control-button-pause
 const SELECTOR_NEXT_BUTTON = ".control-button[data-testid='control-button-skip-forward']";
 const SELECTOR_PREV_BUTTON = ".control-button[data-testid='control-button-skip-back']";
 
+// socket codes
+const SUCCESS_CODE = "success";
+const FAIL_CODE = "unknown_room";
+
 const CONSTANTS = new ConstantVariables();
 
 // socket server
@@ -25,22 +29,29 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, response.expiry);
         
         socket = io.connect(SERVER_IP, { secure: true });
-        setup();
     });
+
+    chrome.runtime.onMessage.addListener(
+        function (request, sender, sendResponse) {
+            console.log("recieved a message");
+            if (request.join_room && socket) {
+                // join_room(request).then(sendResponse);
+                const user_input = request.join_room;
+                socket.emit('join_room', { room_id: user_input }, function (code) {
+                    if (code === SUCCESS_CODE) {
+                        console.log(`Successfully joined ${user_input}`);
+                        setup(user_input);
+                    }
+                    sendResponse({ code: code });
+                });
+            }
+            return true;
+        }
+    );
 });
 
-function setup() {
-    // ========== FOR DEBUGGING PURPOSE ==========
-    const room_id = 'test_room'
-    socket.emit('join_room', { room_id: room_id }, function (code) {
-        if (code === "success") {
-            console.log(`Successfully joined ${room_id}`);
-        } else {
-            console.log(`Failed to join ${room_id}`);
-        }
-    });
-
-    // ========== FOR DEBUGGING PURPOSE ==========
+function setup(room_input = "test_room") {
+    const room_id = room_input;
 
     const observer_blocker = new ObserverBlocker(); // variable representing source of player interaction
     const song_list = new SongList();  // Contains list of songs for current playlist

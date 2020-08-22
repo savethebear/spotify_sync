@@ -37,13 +37,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    $("#submit_room_id").unbind("click").click(function () {
+    $("#submit_room_id").unbind("click").click(function (e) {
+        e.preventDefault();
         const user_input = document.getElementById("room_user_input").value;
         if (user_input) {
             // check if valid
             chrome.tabs.query({}, function(tabs) {
                 tabs.forEach(tab => {
-                    console.log(tab.url);
                     if (tab.url.startsWith("https://open.spotify")) {
                         chrome.tabs.sendMessage(tab.id, { join_room: user_input }, function (response) {
                             if (response && response.code && response.code === "success") {
