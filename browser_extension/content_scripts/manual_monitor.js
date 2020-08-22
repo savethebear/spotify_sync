@@ -119,7 +119,11 @@ function setup(room_input = "test_room") {
             observer_blocker.executeEvent(function () {
                 observer_blocker.override_song_change = true;
                 if (offset !== song_list.current_offset) {
-                    $(SELECTOR_NEXT_BUTTON).first().click();
+                    if (Math.abs(offset - song_list.current_offset) > 1) {
+                        play(null, new SessionData(song_list.playlist_id, offset, 0));
+                    } else {
+                        $(SELECTOR_NEXT_BUTTON).first().click();
+                    }
                     song_list.current_offset = offset;
                 }
             });
