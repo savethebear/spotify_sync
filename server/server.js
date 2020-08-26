@@ -1,7 +1,7 @@
 // Authorisation method copied from https://glitch.com/edit/#!/spotify-audio-analysis
 
 var qs = require('querystring');
-const axios = require('axios');
+const fetch = require('node-fetch');
 const url = require('url');
 var express = require('express');
 var fs = require('fs');
@@ -63,18 +63,17 @@ app.get("/spotify_authorize", function(request, response) {
 
 app.get("/spotify_refresh_token", async function(request, response) {
     const body = url.parse(request.url, true).query;
-    const api = "https://accounts.spotify.com/api/token";
+    const params = {
+        grant_type: "authorization_code",
+        code: body.access_token,
+        redirect_uri: encodeURI(`https://${process.env.SERVER_IP}:${PORT}/`)
+    };
+    const api = `https://accounts.spotify.com/api/token?${qs.stringify(params)}`;
     try {
-        const res = await axios({
-            url: api,
-            method: "post",
+        const res = await fetch(api, {
+            method: "POST",
             headers: {
                 Authorization: `Basic ${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
-            },
-            params: {
-                grant_type: "authorization_code",
-                code: body.access_token,
-                redirect_uri: `https://${process.env.SERVER_IP}:${PORT}/`
             }
         });
         const data = await res.json();
