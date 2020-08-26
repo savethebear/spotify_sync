@@ -74,7 +74,7 @@ app.get("/spotify_refresh_token", async function(request, response) {
             params: {
                 grant_type: "authorization_code",
                 code: body.access_token,
-                redirect_uri: encodeURI(`https://${process.env.SERVER_IP}:${PORT}/`)
+                redirect_uri: `https://${process.env.SERVER_IP}:${PORT}/`
             }
         });
         const data = await res.json();
