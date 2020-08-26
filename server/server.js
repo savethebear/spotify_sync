@@ -59,6 +59,24 @@ app.get("/spotify_authorize", function(request, response) {
     }));
 });
 
+app.get("/spotify_refresh_token", function(request, response) {
+    const body = request.body;
+    const url = "https://accounts.spotify.com/api/token";
+    const res = await fetch(url, {
+        method: "POST",
+        headers: {
+            Authorization: `Basic ${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+        },
+        body: JSON.stringify({
+            grant_type: "authorization_code",
+            code: body.access_token,
+            redirect_uri: encodeURI(`https://${process.env.SERVER_IP}:${PORT}/`)
+        })
+    });
+    const data = await res.json();
+    response.send(data);
+});
+
 
 // Generate room
 function randomString(length, chars) {
