@@ -35,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
         function (request, sender, sendResponse) {
             console.log("recieved a message");
             if (request.join_room && socket) {
-                // join_room(request).then(sendResponse);
                 const user_input = request.join_room;
                 socket.emit('join_room', { room_id: user_input }, function (code) {
                     if (code === SUCCESS_CODE) {
@@ -115,7 +114,6 @@ function setup(room_input = "test_room") {
 
         // Next button
         socket.on("external_next_song", (offset) => {
-            console.log("next recieved...");
             observer_blocker.executeEvent(function () {
                 observer_blocker.override_song_change = true;
                 if (offset !== song_list.current_offset) {
@@ -131,7 +129,6 @@ function setup(room_input = "test_room") {
 
         // Previous button
         socket.on("external_previous_song", (offset) => {
-            console.log("previous revieved...");
             observer_blocker.executeEvent(function () {
                 observer_blocker.override_song_change = true;
                 if (offset !== song_list.current_offset) {
