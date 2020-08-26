@@ -25,7 +25,7 @@ const redirectUriParameters = {
     client_id: process.env.SPOTIFY_CLIENT_ID,
     response_type: 'token',
     scope: jssdkscopes.join(' '),
-    redirect_uri: encodeURI(`https://${process.env.SERVER_IP}:${PORT}/`),
+    redirect_uri: encodeURI(`https://${process.env.SERVER_IP}/`),
     show_dialog: true,
 }
 const redirectUri = `https://accounts.spotify.com/authorize?${qs.stringify(redirectUriParameters)}`;
