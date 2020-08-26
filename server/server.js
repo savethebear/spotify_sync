@@ -64,20 +64,25 @@ app.get("/spotify_authorize", function(request, response) {
 app.get("/spotify_refresh_token", async function(request, response) {
     const body = url.parse(request.url, true).query;
     const api = "https://accounts.spotify.com/api/token";
-    const res = await axios({
-        url: api,
-        method: "post",
-        headers: {
-            Authorization: `Basic ${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
-        },
-        params: {
-            grant_type: "authorization_code",
-            code: body.access_token,
-            redirect_uri: encodeURI(`https://${process.env.SERVER_IP}:${PORT}/`)
-        }
-    });
-    const data = await res.json();
-    response.send(data);
+    try {
+        const res = await axios({
+            url: api,
+            method: "post",
+            headers: {
+                Authorization: `Basic ${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
+            },
+            params: {
+                grant_type: "authorization_code",
+                code: body.access_token,
+                redirect_uri: encodeURI(`https://${process.env.SERVER_IP}:${PORT}/`)
+            }
+        });
+        const data = await res.json();
+        response.send(data);
+    } catch(error) {
+        console.log(error);
+        response.send({});
+    }
 });
 
 
