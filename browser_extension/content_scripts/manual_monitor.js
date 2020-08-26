@@ -281,16 +281,19 @@ function setup(room_input = "test_room") {
         }
 
         let observe_time = parseTimeToMS(seeking_data.progress_bar.text());
-        const time_range = 2000;
-        if (Math.abs(observe_time - seeking_data.past_time) > time_range) {
+        if (isInSeekRange(seeking_data, observe_time)) {
             // seek
             console.log("Seek Detected...");
             if (!observer_blocker.override) {
                 socket.emit("seek_trigger", observe_time, room_id);
             }
         }
-
         seeking_data.past_time = observe_time;
+    }
+
+    function isInSeekRange(seeking_data, observe_time) {
+        const time_range = 2000;
+        return (Math.abs(observe_time - seeking_data.past_time) > time_range);
     }
 
     function parseTimeToMS(time) {
@@ -342,8 +345,16 @@ function setup(room_input = "test_room") {
                 Authorization: `Bearer ${token}`
             }
         }).then((response) => {
-            observer_blocker.override = false
             seeking_data.past_time = duration;
+            let check_timeout = 10; // will release observe blocker after 2 seconds
+            let seek_check_interval = setInterval(function() {
+                const observe_time = parseTimeToMS(seeking_data.progress_bar.text());
+                if (isInSeekRange(seeking_data, observe_time) || check_timeout < 1) {
+                    observer_blocker.override = false;
+                    clearInterval(seek_check_interval);
+                }
+                check_timeout--;
+            }, 200);
         });
     }
 
