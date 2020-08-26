@@ -29,11 +29,23 @@ $("#cancel_room_id").click(function() {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+    // init view
+    chrome.runtime.sendMessage({ get_room_id: true }, function(response) {
+        if (response.room_id) {
+            $("#active_room_container").show();
+            $("#active_room").text(response.room_id);
+
+            show_room_buttons(false);
+        }
+    });
+
     chrome.runtime.sendMessage({ get_access_token: true }, function (response) {
         if (response.access_token) {
-            const outer_buttons = document.getElementsByClassName("outer_buttons");
-            show_room_buttons(true);
             document.getElementById("authorise").style.display = "none";
+
+            if (!response.room_id) {
+                show_room_buttons(true);
+            }
         }
     });
 
@@ -52,6 +64,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                                 // hide everything else
                                 document.getElementById("room_id_input").style.display = "none";
+
+                                // save id in background
+                                chrome.runtime.sendMessage({ set_room_id: true, room_id: user_input });
                             }
                         });
                     }

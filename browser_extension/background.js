@@ -14,6 +14,8 @@ chrome.storage.sync.get([SPOTIFY_SESSION_TOKEN_EXPIRES_IN], function(result) {
     spotify_session_expiry = result.spotify_session_expiry;
 });
 
+let room_id; // room id expires as soon as the browser closes
+
 chrome.runtime.onMessage.addListener(
     function (request, sender, sendResponse) {
         if (request.access_token) {
@@ -23,7 +25,11 @@ chrome.runtime.onMessage.addListener(
             spotify_session_token = request.access_token;
             spotify_session_expiry = request.expiry;
         } else if (request.get_access_token) {
-            sendResponse({ access_token: spotify_session_token, expiry: spotify_session_expiry });
+            sendResponse({ access_token: spotify_session_token, expiry: spotify_session_expiry, room_id: room_id });
+        } else if (request.set_room_id) {
+            room_id = request.room_id;
+        } else if (request.get_room_id) {
+            sendResponse({ room_id: room_id });
         }
     }
 );
