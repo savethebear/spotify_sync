@@ -5,13 +5,7 @@ var express = require('express');
 var fs = require('fs');
 var app = express();
 
-const key = process.env.CERT_KEY || fs.readFileSync('./keys/selfsigned.key');
-const cert = process.env.CERT_CERT || fs.readFileSync('./keys/selfsigned.crt');
-
-var http = require('https').createServer({
-    key: key,
-    cert: cert
-}, app);
+var http = require('http').createServer(app);
 var io = require('socket.io')(http);
 
 if (process.env.NODE_ENV !== 'production') {
