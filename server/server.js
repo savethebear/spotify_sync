@@ -63,15 +63,15 @@ app.get("/spotify_authorize", function(request, response) {
 
 app.get("/spotify_get_token", async function(request, response) {
     const body = url.parse(request.url, true).query;
-    const param = {
+    const params = {
         redirect_uri: encodeURI(`https://${process.env.SERVER_IP}:${PORT}/`)
     };
     if (body.type === "initial_token") {
-        param["grant_type"] = "authorization_code";
-        param["code"] = body.code;
+        params["grant_type"] = "authorization_code";
+        params["code"] = body.code;
     } else if (body.type === "refresh_toekn") {
-        param["grant_type"] = "refresh_token";
-        param["refresh_token"] = body.refresh_token;
+        params["grant_type"] = "refresh_token";
+        params["refresh_token"] = body.refresh_token;
     }
     
     const api = `https://accounts.spotify.com/api/token?${qs.stringify(params)}`;
