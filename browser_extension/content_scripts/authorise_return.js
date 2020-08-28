@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 fetch(url)
                     .then(response => response.json())
                     .then(data => {
-                        chrome.storage.clear();
+                        chrome.storage.sync.clear();
                         chrome.storage.sync.set({
                             "spotify-sync-access-token": data.access_token,
                             "spotify-sync-access-token-expires-in": Date.now() + 990 * parseInt(data.expires_in),

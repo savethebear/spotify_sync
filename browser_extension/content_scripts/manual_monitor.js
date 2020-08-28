@@ -1,6 +1,7 @@
 // saved access token keys
 const LOCALSTORAGE_ACCESS_TOKEN_KEY = 'spotify-sync-access-token';
 const LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY = "spotify-sync-access-token-expires-in";
+const LOCALSTORAGE_REFRESH_TOKEN_KEY = "spotify-sync-refresh-token";
 
 // selector paths
 const SELECTOR_PLAY_BUTTON = ".control-button[data-testid='control-button-play']";
@@ -20,14 +21,16 @@ let socket;
 
 document.addEventListener('DOMContentLoaded', () => {
     // save access token
-    chrome.runtime.sendMessage({ get_access_token: true }, function(response) {
-        if (!response.access_token) {
+    chrome.storage.sync.get([LOCALSTORAGE_ACCESS_TOKEN_KEY, LOCALSTORAGE_REFRESH_TOKEN_KEY], function(items) {
+        console.log(items);
+        if (!items[LOCALSTORAGE_ACCESS_TOKEN_KEY] || !items[LOCALSTORAGE_REFRESH_TOKEN_KEY]) {
             alert("Missing Authentication...");
             return;
         }
-        localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_KEY, response.access_token);
-        localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, response.expiry);
-        
+
+        localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_KEY, items[LOCALSTORAGE_ACCESS_TOKEN_KEY]);
+        localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, items[LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY]);
+        localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, items[LOCALSTORAGE_REFRESH_TOKEN_KEY]);
         socket = io.connect(SERVER_IP, { secure: true });
     });
 
@@ -56,6 +59,13 @@ function setup(room_input = "test_room") {
     const song_list = new SongList();  // Contains list of songs for current playlist
     const seeking_data = new SeekMonitorData();  // object for seeking
     let init_session_data = null;
+
+    // TEST TOKEN REFRESH
+    // fetch(`https://${CONSTANTS.server_ip}/spotify_get_token?access_token=${localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY)}`, {
+    //     method: "GET"
+    // }).then(response => {
+    //     console.log(response);
+    // });
 
     // Wait untils controls are visible
     let controls = $(".player-controls");
