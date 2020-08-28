@@ -58,9 +58,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     .then(data => {
                         chrome.storage.sync.clear();
                         chrome.storage.sync.set({
-                            "spotify-sync-access-token": data.access_token,
-                            "spotify-sync-access-token-expires-in": Date.now() + 990 * parseInt(data.expires_in),
-                            "spotify-sync-refresh-token": data.refresh_token
+                            [CONSTANTS.access_token_key]: data.access_token,
+                            [CONSTANTS.access_token_expiry_key]: Date.now() + 990 * parseInt(data.expires_in),
+                            [CONSTANTS.refresh_token_key]: data.refresh_token
                         }, function() {
                             window.location.assign(SPOTIFY_WEB_PLAYER_URL);
                         });
