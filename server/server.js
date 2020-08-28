@@ -72,13 +72,10 @@ app.get("/spotify_refresh_token", async function(request, response) {
     try {
         const res = await fetch(api, {
             method: "POST",
-            body: JSON.stringify({
-                client_id: `${process.env.SPOTIFY_CLIENT_ID}`,
-                client_secret: `${process.env.SPOTIFY_CLIENT_SECRET}`
-            })
-            // headers: {
-            //     Authorization: `Basic ${process.env.SPOTIFY_CLIENT_ID}:${process.env.SPOTIFY_CLIENT_SECRET}`
-            // }
+            headers: {
+                Authorization: `Basic ${Buffer.from(process.env.SPOTIFY_CLIENT_ID + ":" + process.env.SPOTIFY_CLIENT_SECRET).toString('base64')}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
         });
         const data = await res.json();
         response.send(data);
