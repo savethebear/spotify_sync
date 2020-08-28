@@ -31,7 +31,7 @@ var spotifyApi = new SpotifyWebApi({
 const jssdkscopes = ["streaming", "user-read-email", "user-read-private", "user-read-playback-state", "user-modify-playback-state"];
 const redirectUriParameters = {
     client_id: process.env.SPOTIFY_CLIENT_ID,
-    response_type: 'token',
+    response_type: 'code',
     scope: jssdkscopes.join(' '),
     redirect_uri: encodeURI(`https://${process.env.SERVER_IP}:${PORT}/`),
     show_dialog: true,
@@ -61,13 +61,19 @@ app.get("/spotify_authorize", function(request, response) {
     }));
 });
 
-app.get("/spotify_refresh_token", async function(request, response) {
+app.get("/spotify_get_token", async function(request, response) {
     const body = url.parse(request.url, true).query;
-    const params = {
-        grant_type: "authorization_code",
-        code: body.access_token,
+    const param = {
         redirect_uri: encodeURI(`https://${process.env.SERVER_IP}:${PORT}/`)
     };
+    if (body.type === "initial_token") {
+        param["grant_type"] = "authorization_code";
+        param["code"] = body.code;
+    } else if (body.type === "refresh_toekn") {
+        param["grant_type"] = "refresh_token";
+        param["refresh_token"] = body.refresh_token;
+    }
+    
     const api = `https://accounts.spotify.com/api/token?${qs.stringify(params)}`;
     try {
         const res = await fetch(api, {
