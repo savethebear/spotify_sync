@@ -6,5 +6,6 @@ class ConstantVariables {
         this.access_token_key = 'spotify-sync-access-token';
         this.access_token_expiry_key = "spotify-sync-access-token-expires-in";
         this.refresh_token_key = "spotify-sync-refresh-token";
+        this.room_id_key = "spotify-sync-room-id";
     }
 }
