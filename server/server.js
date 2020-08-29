@@ -5,7 +5,6 @@ const fetch = require('node-fetch');
 const url = require('url');
 var express = require('express');
 var cors = require('cors')
-var fs = require('fs');
 var app = express();
 
 var http = require('http').createServer(app);
