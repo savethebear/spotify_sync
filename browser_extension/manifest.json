@@ -35,6 +35,7 @@
             ],
             "run_at": "document_start",
             "js": [
+                "env_vars.js",
                 "content_scripts/authorise_return.js"
             ]
         }
