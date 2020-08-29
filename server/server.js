@@ -4,6 +4,7 @@ var qs = require('querystring');
 const fetch = require('node-fetch');
 const url = require('url');
 var express = require('express');
+var cors = require('cors')
 var fs = require('fs');
 var app = express();
 
@@ -61,7 +62,7 @@ app.get("/spotify_authorize", function(request, response) {
     }));
 });
 
-app.get("/spotify_get_token", async function(request, response) {
+app.get("/spotify_get_token", cors(), async function(request, response) {
     const body = url.parse(request.url, true).query;
     const params = {
         redirect_uri: encodeURI(`https://${process.env.SERVER_IP}:${PORT}/`)
@@ -69,7 +70,7 @@ app.get("/spotify_get_token", async function(request, response) {
     if (body.type === "initial_token") {
         params["grant_type"] = "authorization_code";
         params["code"] = body.code;
-    } else if (body.type === "refresh_toekn") {
+    } else if (body.type === "refresh_token") {
         params["grant_type"] = "refresh_token";
         params["refresh_token"] = body.refresh_token;
     }
