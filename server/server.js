@@ -58,7 +58,7 @@ app.get("/spotify_authorize", function(request, response) {
 app.get("/spotify_get_token", cors(), async function(request, response) {
     const body = url.parse(request.url, true).query;
     const params = {
-        redirect_uri: encodeURI(`https://${process.env.SERVER_IP}:${PORT}/`)
+        redirect_uri: encodeURI(`https://${process.env.SERVER_IP}/`)
     };
     if (body.type === "initial_token") {
         params["grant_type"] = "authorization_code";
