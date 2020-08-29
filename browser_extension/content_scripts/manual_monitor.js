@@ -1,8 +1,3 @@
-// saved access token keys
-const LOCALSTORAGE_ACCESS_TOKEN_KEY = 'spotify-sync-access-token';
-const LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY = "spotify-sync-access-token-expires-in";
-const LOCALSTORAGE_REFRESH_TOKEN_KEY = "spotify-sync-refresh-token";
-
 // selector paths
 const SELECTOR_PLAY_BUTTON = ".control-button[data-testid='control-button-play']";
 const SELECTOR_PAUSE_BUTTON = ".control-button[data-testid='control-button-pause']";
@@ -24,16 +19,16 @@ document.addEventListener('DOMContentLoaded', () => {
     chrome.storage.sync.remove(CONSTANTS.room_id_key);
 
     // save access token
-    chrome.storage.sync.get([LOCALSTORAGE_ACCESS_TOKEN_KEY, LOCALSTORAGE_REFRESH_TOKEN_KEY], function(items) {
+    chrome.storage.sync.get([CONSTANTS.access_token_key, CONSTANTS.refresh_token_key], function(items) {
         console.log(items);
-        if (!items[LOCALSTORAGE_ACCESS_TOKEN_KEY] || !items[LOCALSTORAGE_REFRESH_TOKEN_KEY]) {
+        if (!items[CONSTANTS.access_token_key] || !items[CONSTANTS.refresh_token_key]) {
             alert("Missing Authentication...");
             return;
         }
 
-        localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_KEY, items[LOCALSTORAGE_ACCESS_TOKEN_KEY]);
-        localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, items[LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY]);
-        localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, items[LOCALSTORAGE_REFRESH_TOKEN_KEY]);
+        localStorage.setItem(CONSTANTS.access_token_key, items[CONSTANTS.access_token_key]);
+        localStorage.setItem(CONSTANTS.access_token_expiry_key, items[CONSTANTS.access_token_expiry_key]);
+        localStorage.setItem(CONSTANTS.access_token_expiry_key, items[CONSTANTS.refresh_token_key]);
         socket = io.connect(SERVER_IP, { secure: true });
     });
 
@@ -319,7 +314,7 @@ function setup(room_input = "test_room") {
     }
 
     async function init_user_playback(init_session_data) {
-        let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
+        let token = localStorage.getItem(CONSTANTS.access_token_key);
 
         let response = await fetch(`https://api.spotify.com/v1/me/player/devices`, {
             method: "GET",
@@ -347,7 +342,7 @@ function setup(room_input = "test_room") {
     }
 
     function seek(duration) {
-        let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
+        let token = localStorage.getItem(CONSTANTS.access_token_key);
         observer_blocker.override = true;
         fetch(`https://api.spotify.com/v1/me/player/seek?position_ms=${parseInt(duration)}`, {
             method: "PUT",
@@ -369,7 +364,7 @@ function setup(room_input = "test_room") {
     }
 
     async function play(device_id, session_data) {
-        let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
+        let token = localStorage.getItem(CONSTANTS.access_token_key);
 
         if (!session_data.playlist_id) {
             console.log("session_data invalid...");
