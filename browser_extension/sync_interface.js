@@ -5,8 +5,8 @@ $("#authorise").unbind("click").click(function(e) {
     fetch(`https://${CONSTANTS.server_ip}/spotify_authorize`)
         .then(e => e.json())
         .then(data => {
-            chrome.runtime.sendMessage({ get_access_token: true }, function (response) {
-                if (response && parseInt(response.expiry) > Date.now()) {
+            chrome.storage.sync.get([CONSTANTS.access_token_expiry_key], function (response) {
+                if (response && parseInt(response[CONSTANTS.access_token_expiry_key]) > Date.now()) {
                     chrome.tabs.create({ url: `https://${CONSTANTS.server_ip}/`});
                 } else {
                     console.log(data.redirectUri);
@@ -30,20 +30,20 @@ $("#cancel_room_id").click(function() {
 
 document.addEventListener('DOMContentLoaded', () => {
     // init view
-    chrome.runtime.sendMessage({ get_room_id: true }, function(response) {
-        if (response.room_id) {
+    chrome.storage.sync.get([CONSTANTS.room_id_key], function(response) {
+        if (response[CONSTANTS.room_id_key]) {
             $("#active_room_container").show();
-            $("#active_room").text(response.room_id);
+            $("#active_room").text(response[CONSTANTS.room_id_key]);
 
             show_room_buttons(false);
         }
     });
 
-    chrome.runtime.sendMessage({ get_access_token: true }, function (response) {
-        if (response.access_token) {
+    chrome.storage.sync.get([CONSTANTS.access_token_key, CONSTANTS.room_id_key, CONSTANTS.access_token_expiry_key], function (response) {
+        if (response[CONSTANTS.access_token_key] && parseInt(response[CONSTANTS.access_token_expiry_key]) > Date.now()) {
             document.getElementById("authorise").style.display = "none";
 
-            if (!response.room_id) {
+            if (!response[CONSTANTS.room_id_key]) {
                 show_room_buttons(true);
             }
         }
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 document.getElementById("room_id_input").style.display = "none";
 
                                 // save id in background
-                                chrome.runtime.sendMessage({ set_room_id: true, room_id: user_input });
+                                chrome.storage.sync.set({ [CONSTANTS.room_id_key]: user_input });
                             }
                         });
                     }
