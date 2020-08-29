@@ -20,6 +20,9 @@ const SERVER_IP = `https://${CONSTANTS.server_ip}`;
 let socket;
 
 document.addEventListener('DOMContentLoaded', () => {
+    // remove room_id
+    chrome.storage.sync.remove(CONSTANTS.room_id_key);
+
     // save access token
     chrome.storage.sync.get([LOCALSTORAGE_ACCESS_TOKEN_KEY, LOCALSTORAGE_REFRESH_TOKEN_KEY], function(items) {
         console.log(items);
