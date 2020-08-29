@@ -40,7 +40,7 @@ class SongList {
      * @param {string} current_song name of the current song to set the current offset.
      */
     async getSongList(current_song) {
-        let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
+        let token = localStorage.getItem(CONSTANTS.access_token_key);
         if (!token) {
             alert("Missing autherization...");
             return;

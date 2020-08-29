@@ -190,9 +190,9 @@ function setup(room_input = "test_room") {
                     if (!play_button.attr("class").includes("control-button--loading")) {
                         play_trigger(play_button, room_id);
                     }
-                    seek_monitor_setup(play_button, seeking_data)
                 });
                 play_observer.observe(play_button[0], { attributeFilter:["title"], attributes: true });
+                seek_monitor_setup(play_button, seeking_data);
 
                 console.log("Done..");
                 clearInterval(interval);
@@ -242,7 +242,6 @@ function setup(room_input = "test_room") {
             observer_blocker.override_song_change = false;
             return;
         }
-        console.log("Song changed..");
 
         const album_obj = now_playing.find("div > div > a");
         const current_link = album_obj.attr('href');
