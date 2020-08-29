@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         localStorage.setItem(CONSTANTS.access_token_key, items[CONSTANTS.access_token_key]);
         localStorage.setItem(CONSTANTS.access_token_expiry_key, items[CONSTANTS.access_token_expiry_key]);
-        localStorage.setItem(CONSTANTS.access_token_expiry_key, items[CONSTANTS.refresh_token_key]);
+        localStorage.setItem(CONSTANTS.refresh_token_key, items[CONSTANTS.refresh_token_key]);
         socket = io.connect(SERVER_IP, { secure: true });
     });
 
@@ -48,6 +48,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         }
     );
+
+    // refresh access token interval
+    const refresh_interval = 3600000
+    let refresh_token_interval = setInterval(() => {
+        const ref_url = new URL(`https://${CONSTANTS.server_ip}/spotify_get_token`);
+        ref_url.searchParams.append("type", "refresh_token");
+        ref_url.searchParams.append("refresh_token", localStorage.getItem(CONSTANTS.refresh_token_key));
+        fetch(ref_url)
+            .then(response => response.json())
+            .then(data => {
+                const expire_time = Date.now() + 990 * parseInt(hash['expires_in']);
+                chrome.storage.sync.set({ 
+                    [CONSTANTS.access_token_key]: data.access_token,
+                    [CONSTANTS.access_token_expiry_key]: expire_time
+                });
+                localStorage.setItem(CONSTANTS.access_token_key, data.access_token);
+                localStorage.setItem(CONSTANTS.access_token_expiry_key, expire_time);
+            });
+    }, refresh_interval);
 });
 
 function setup(room_input = "test_room") {
@@ -59,11 +78,7 @@ function setup(room_input = "test_room") {
     let init_session_data = null;
 
     // TEST TOKEN REFRESH
-    // fetch(`https://${CONSTANTS.server_ip}/spotify_get_token?access_token=${localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY)}`, {
-    //     method: "GET"
-    // }).then(response => {
-    //     console.log(response);
-    // });
+    
 
     // Wait untils controls are visible
     let controls = $(".player-controls");
