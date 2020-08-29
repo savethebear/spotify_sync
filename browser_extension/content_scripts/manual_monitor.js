@@ -1,7 +1,3 @@
-// saved access token keys
-const LOCALSTORAGE_ACCESS_TOKEN_KEY = 'spotify-sync-access-token';
-const LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY = "spotify-sync-access-token-expires-in";
-
 // selector paths
 const SELECTOR_PLAY_BUTTON = ".control-button[data-testid='control-button-play']";
 const SELECTOR_PAUSE_BUTTON = ".control-button[data-testid='control-button-pause']";
@@ -19,15 +15,20 @@ const SERVER_IP = `https://${CONSTANTS.server_ip}`;
 let socket;
 
 document.addEventListener('DOMContentLoaded', () => {
+    // remove room_id
+    chrome.storage.sync.remove(CONSTANTS.room_id_key);
+
     // save access token
-    chrome.runtime.sendMessage({ get_access_token: true }, function(response) {
-        if (!response.access_token) {
+    chrome.storage.sync.get([CONSTANTS.access_token_key, CONSTANTS.refresh_token_key], function(items) {
+        console.log(items);
+        if (!items[CONSTANTS.access_token_key] || !items[CONSTANTS.refresh_token_key]) {
             alert("Missing Authentication...");
             return;
         }
-        localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_KEY, response.access_token);
-        localStorage.setItem(LOCALSTORAGE_ACCESS_TOKEN_EXPIRY_KEY, response.expiry);
-        
+
+        localStorage.setItem(CONSTANTS.access_token_key, items[CONSTANTS.access_token_key]);
+        localStorage.setItem(CONSTANTS.access_token_expiry_key, items[CONSTANTS.access_token_expiry_key]);
+        localStorage.setItem(CONSTANTS.refresh_token_key, items[CONSTANTS.refresh_token_key]);
         socket = io.connect(SERVER_IP, { secure: true });
     });
 
@@ -35,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
         function (request, sender, sendResponse) {
             console.log("recieved a message");
             if (request.join_room && socket) {
-                // join_room(request).then(sendResponse);
                 const user_input = request.join_room;
                 socket.emit('join_room', { room_id: user_input }, function (code) {
                     if (code === SUCCESS_CODE) {
@@ -48,6 +48,25 @@ document.addEventListener('DOMContentLoaded', () => {
             return true;
         }
     );
+
+    // refresh access token interval
+    const refresh_interval = 3600000
+    let refresh_token_interval = setInterval(() => {
+        const ref_url = new URL(`https://${CONSTANTS.server_ip}/spotify_get_token`);
+        ref_url.searchParams.append("type", "refresh_token");
+        ref_url.searchParams.append("refresh_token", localStorage.getItem(CONSTANTS.refresh_token_key));
+        fetch(ref_url)
+            .then(response => response.json())
+            .then(data => {
+                const expire_time = Date.now() + 990 * parseInt(hash['expires_in']);
+                chrome.storage.sync.set({ 
+                    [CONSTANTS.access_token_key]: data.access_token,
+                    [CONSTANTS.access_token_expiry_key]: expire_time
+                });
+                localStorage.setItem(CONSTANTS.access_token_key, data.access_token);
+                localStorage.setItem(CONSTANTS.access_token_expiry_key, expire_time);
+            });
+    }, refresh_interval);
 });
 
 function setup(room_input = "test_room") {
@@ -57,6 +76,9 @@ function setup(room_input = "test_room") {
     const song_list = new SongList();  // Contains list of songs for current playlist
     const seeking_data = new SeekMonitorData();  // object for seeking
     let init_session_data = null;
+
+    // TEST TOKEN REFRESH
+    
 
     // Wait untils controls are visible
     let controls = $(".player-controls");
@@ -115,7 +137,6 @@ function setup(room_input = "test_room") {
 
         // Next button
         socket.on("external_next_song", (offset) => {
-            console.log("next recieved...");
             observer_blocker.executeEvent(function () {
                 observer_blocker.override_song_change = true;
                 if (offset !== song_list.current_offset) {
@@ -131,7 +152,6 @@ function setup(room_input = "test_room") {
 
         // Previous button
         socket.on("external_previous_song", (offset) => {
-            console.log("previous revieved...");
             observer_blocker.executeEvent(function () {
                 observer_blocker.override_song_change = true;
                 if (offset !== song_list.current_offset) {
@@ -185,9 +205,9 @@ function setup(room_input = "test_room") {
                     if (!play_button.attr("class").includes("control-button--loading")) {
                         play_trigger(play_button, room_id);
                     }
-                    seek_monitor_setup(play_button, seeking_data)
                 });
                 play_observer.observe(play_button[0], { attributeFilter:["title"], attributes: true });
+                seek_monitor_setup(play_button, seeking_data);
 
                 console.log("Done..");
                 clearInterval(interval);
@@ -237,7 +257,6 @@ function setup(room_input = "test_room") {
             observer_blocker.override_song_change = false;
             return;
         }
-        console.log("Song changed..");
 
         const album_obj = now_playing.find("div > div > a");
         const current_link = album_obj.attr('href');
@@ -281,16 +300,19 @@ function setup(room_input = "test_room") {
         }
 
         let observe_time = parseTimeToMS(seeking_data.progress_bar.text());
-        const time_range = 2000;
-        if (Math.abs(observe_time - seeking_data.past_time) > time_range) {
+        if (isInSeekRange(seeking_data, observe_time)) {
             // seek
             console.log("Seek Detected...");
             if (!observer_blocker.override) {
                 socket.emit("seek_trigger", observe_time, room_id);
             }
         }
-
         seeking_data.past_time = observe_time;
+    }
+
+    function isInSeekRange(seeking_data, observe_time) {
+        const time_range = 2000;
+        return (Math.abs(observe_time - seeking_data.past_time) > time_range);
     }
 
     function parseTimeToMS(time) {
@@ -306,7 +328,7 @@ function setup(room_input = "test_room") {
     }
 
     async function init_user_playback(init_session_data) {
-        let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
+        let token = localStorage.getItem(CONSTANTS.access_token_key);
 
         let response = await fetch(`https://api.spotify.com/v1/me/player/devices`, {
             method: "GET",
@@ -334,7 +356,7 @@ function setup(room_input = "test_room") {
     }
 
     function seek(duration) {
-        let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
+        let token = localStorage.getItem(CONSTANTS.access_token_key);
         observer_blocker.override = true;
         fetch(`https://api.spotify.com/v1/me/player/seek?position_ms=${parseInt(duration)}`, {
             method: "PUT",
@@ -342,13 +364,21 @@ function setup(room_input = "test_room") {
                 Authorization: `Bearer ${token}`
             }
         }).then((response) => {
-            observer_blocker.override = false
             seeking_data.past_time = duration;
+            let check_timeout = 10; // will release observe blocker after 2 seconds
+            let seek_check_interval = setInterval(function() {
+                const observe_time = parseTimeToMS(seeking_data.progress_bar.text());
+                if (isInSeekRange(seeking_data, observe_time) || check_timeout < 1) {
+                    observer_blocker.override = false;
+                    clearInterval(seek_check_interval);
+                }
+                check_timeout--;
+            }, 200);
         });
     }
 
     async function play(device_id, session_data) {
-        let token = localStorage.getItem(LOCALSTORAGE_ACCESS_TOKEN_KEY);
+        let token = localStorage.getItem(CONSTANTS.access_token_key);
 
         if (!session_data.playlist_id) {
             console.log("session_data invalid...");

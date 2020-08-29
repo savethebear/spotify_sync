@@ -1,7 +1,10 @@
 // Authorisation method copied from https://glitch.com/edit/#!/spotify-audio-analysis
 
 var qs = require('querystring');
+const fetch = require('node-fetch');
+const url = require('url');
 var express = require('express');
+var cors = require('cors')
 var fs = require('fs');
 var app = express();
 
@@ -23,7 +26,7 @@ var spotifyApi = new SpotifyWebApi({
 const jssdkscopes = ["streaming", "user-read-email", "user-read-private", "user-read-playback-state", "user-modify-playback-state"];
 const redirectUriParameters = {
     client_id: process.env.SPOTIFY_CLIENT_ID,
-    response_type: 'token',
+    response_type: 'code',
     scope: jssdkscopes.join(' '),
     redirect_uri: encodeURI(`https://${process.env.SERVER_IP}/`),
     show_dialog: true,
@@ -51,6 +54,36 @@ app.get("/spotify_authorize", function(request, response) {
     response.send(JSON.stringify({
         redirectUri
     }));
+});
+
+app.get("/spotify_get_token", cors(), async function(request, response) {
+    const body = url.parse(request.url, true).query;
+    const params = {
+        redirect_uri: encodeURI(`https://${process.env.SERVER_IP}:${PORT}/`)
+    };
+    if (body.type === "initial_token") {
+        params["grant_type"] = "authorization_code";
+        params["code"] = body.code;
+    } else if (body.type === "refresh_token") {
+        params["grant_type"] = "refresh_token";
+        params["refresh_token"] = body.refresh_token;
+    }
+    
+    const api = `https://accounts.spotify.com/api/token?${qs.stringify(params)}`;
+    try {
+        const res = await fetch(api, {
+            method: "POST",
+            headers: {
+                Authorization: `Basic ${Buffer.from(process.env.SPOTIFY_CLIENT_ID + ":" + process.env.SPOTIFY_CLIENT_SECRET).toString('base64')}`,
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+        const data = await res.json();
+        response.send(data);
+    } catch(error) {
+        console.log(error);
+        response.send({});
+    }
 });
 
 
