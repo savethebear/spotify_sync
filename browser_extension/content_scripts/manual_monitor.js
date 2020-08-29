@@ -205,6 +205,7 @@ function setup(room_input = "test_room") {
                     if (!play_button.attr("class").includes("control-button--loading")) {
                         play_trigger(play_button, room_id);
                     }
+                    seek_monitor_setup(play_button, seeking_data);
                 });
                 play_observer.observe(play_button[0], { attributeFilter:["title"], attributes: true });
                 seek_monitor_setup(play_button, seeking_data);
