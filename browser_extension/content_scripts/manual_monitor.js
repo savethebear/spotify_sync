@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(ref_url)
             .then(response => response.json())
             .then(data => {
-                const expire_time = Date.now() + 990 * parseInt(hash['expires_in']);
+                const expire_time = Date.now() + 990 * parseInt(data.expires_in);
                 chrome.storage.sync.set({ 
                     [CONSTANTS.access_token_key]: data.access_token,
                     [CONSTANTS.access_token_expiry_key]: expire_time
