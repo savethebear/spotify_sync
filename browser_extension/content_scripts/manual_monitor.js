@@ -3,6 +3,7 @@ const SELECTOR_PLAY_BUTTON = ".control-button[data-testid='control-button-play']
 const SELECTOR_PAUSE_BUTTON = ".control-button[data-testid='control-button-pause']";
 const SELECTOR_NEXT_BUTTON = ".control-button[data-testid='control-button-skip-forward']";
 const SELECTOR_PREV_BUTTON = ".control-button[data-testid='control-button-skip-back']";
+const SELECTOR_NOW_PLAYING = ".now-playing";
 
 // socket codes
 const SUCCESS_CODE = "success";
@@ -58,7 +59,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fetch(ref_url)
             .then(response => response.json())
             .then(data => {
-                const expire_time = Date.now() + 990 * parseInt(hash['expires_in']);
+                const expire_time = Date.now() + 990 * parseInt(data.expires_in);
                 chrome.storage.sync.set({ 
                     [CONSTANTS.access_token_key]: data.access_token,
                     [CONSTANTS.access_token_expiry_key]: expire_time
@@ -76,9 +77,6 @@ function setup(room_input = "test_room") {
     const song_list = new SongList();  // Contains list of songs for current playlist
     const seeking_data = new SeekMonitorData();  // object for seeking
     let init_session_data = null;
-
-    // TEST TOKEN REFRESH
-    
 
     // Wait untils controls are visible
     let controls = $(".player-controls");
@@ -169,6 +167,15 @@ function setup(room_input = "test_room") {
                 seek(modified_timestamp);
             }
         });
+
+        // Song changed handle
+        socket.on("external_change_playlist", (playlist_id, song_offset) => {
+            console.log(`playlist id: ${playlist_id},  song uri: ${song_offset}`);
+            observer_blocker.override = true;
+            observer_blocker.override_song_change = true;
+            play(null, new SessionData(playlist_id, song_offset, null, 0), true);
+            song_list.updateSongList(playlist_id, song_offset);
+        });
     }
 
     function setupObservers(session_data) {
@@ -183,7 +190,7 @@ function setup(room_input = "test_room") {
 
         // Wait until player is visible
         let interval = setInterval(function () {
-            now_playing = $(".now-playing");
+            now_playing = $(".now-playing").parent();
             progress_bar = $(".playback-bar div:first-child").first();
 
             if (now_playing.length > 0) {
@@ -195,9 +202,9 @@ function setup(room_input = "test_room") {
                 }
 
                 song_changed_observer = new MutationObserver(function () {
-                    song_changed(song_list, now_playing)
+                    song_changed(song_list, now_playing);
                 });
-                song_changed_observer.observe(now_playing[0], { attributes: true });
+                song_changed_observer.observe(now_playing[0], { attributes: true, subtree: true, childList: true });
 
                 // play observer
                 seeking_data.progress_bar = progress_bar;
@@ -205,6 +212,7 @@ function setup(room_input = "test_room") {
                     if (!play_button.attr("class").includes("control-button--loading")) {
                         play_trigger(play_button, room_id);
                     }
+                    seek_monitor_setup(play_button, seeking_data);
                 });
                 play_observer.observe(play_button[0], { attributeFilter:["title"], attributes: true });
                 seek_monitor_setup(play_button, seeking_data);
@@ -251,13 +259,15 @@ function setup(room_input = "test_room") {
         socket.emit('prev_song', offset, room_id);
     }
 
-    function song_changed(song_list, now_playing) {
+    async function song_changed(song_list) {
+        console.log(`song check ${observer_blocker.override}`);
+        const now_playing = $(SELECTOR_NOW_PLAYING);
+
         // Event was triggered from socket
-        if (observer_blocker.override || observer_blocker.override_song_change) {
+        if (observer_blocker.override) {
             observer_blocker.override_song_change = false;
             return;
         }
-
         const album_obj = now_playing.find("div > div > a");
         const current_link = album_obj.attr('href');
         const current_song = now_playing.find("a[data-testid='nowplaying-track-link']").first().text();
@@ -272,9 +282,9 @@ function setup(room_input = "test_room") {
         // check if the album has changed
         if (current_link !== song_list.playlist_id) {
             // playlist changed...
-            song_list.updateSongList(current_link, current_song);
-            console.log("playlist changed");
-            // todo: emit something
+            let song_offset = await song_list.updateSongList(current_link, current_song);
+            console.log(`playlist changed to ${current_link} with offset ${song_offset}`);
+            socket.emit('change_playlist', room_id, current_link, song_offset);
         } else {
             // detect prev or next (assuming no shuffle)
             const offset = song_list.getOffset(current_song);
@@ -377,7 +387,7 @@ function setup(room_input = "test_room") {
         });
     }
 
-    async function play(device_id, session_data) {
+    async function play(device_id, session_data, toggle_blocker) {
         let token = localStorage.getItem(CONSTANTS.access_token_key);
 
         if (!session_data.playlist_id) {
@@ -406,6 +416,8 @@ function setup(room_input = "test_room") {
         if (session_data.play_state && session_data.play_state !== current_play_state) {
             play_button.click();
         }
+
+        if (toggle_blocker) observer_blocker.override = false;
 
         function contextURIParse(playlist_id) {
             let temp = playlist_id.split('/');

@@ -2,9 +2,11 @@ const CONSTANTS = new ConstantVariables();
 
 $("#authorise").unbind("click").click(function(e) {
     e.preventDefault();
+    toggleLoadAuth(true);
     fetch(`https://${CONSTANTS.server_ip}/spotify_authorize`)
-        .then(e => e.json())
+        .then(e =>  e.json())
         .then(data => {
+            toggleLoadAuth(false);
             chrome.storage.sync.get([CONSTANTS.access_token_expiry_key], function (response) {
                 if (response && parseInt(response[CONSTANTS.access_token_expiry_key]) > Date.now()) {
                     chrome.tabs.create({ url: `https://${CONSTANTS.server_ip}/`});
@@ -16,6 +18,16 @@ $("#authorise").unbind("click").click(function(e) {
         })
         .catch(error => { alert("Failed to prepare for Spotify Authentication") });
 });
+
+function toggleLoadAuth(show_loading) {
+    if (show_loading) {
+        $("#auth_container .loader").show();
+        $("#authorise").hide();
+    } else {
+        $("#auth_container .loader").hide();
+        $("#authorise").show();
+    }
+}
 
 $("#join_room").click(function (e) {
     e.preventDefault();
@@ -29,22 +41,19 @@ $("#cancel_room_id").click(function() {
 
 
 document.addEventListener('DOMContentLoaded', () => {
+    // chrome.storage.sync.clear();
     // init view
-    chrome.storage.sync.get([CONSTANTS.room_id_key], function(response) {
-        if (response[CONSTANTS.room_id_key]) {
-            $("#active_room_container").show();
-            $("#active_room").text(response[CONSTANTS.room_id_key]);
-
-            show_room_buttons(false);
-        }
-    });
-
     chrome.storage.sync.get([CONSTANTS.access_token_key, CONSTANTS.room_id_key, CONSTANTS.access_token_expiry_key], function (response) {
         if (response[CONSTANTS.access_token_key] && parseInt(response[CONSTANTS.access_token_expiry_key]) > Date.now()) {
-            document.getElementById("authorise").style.display = "none";
+            $("#auth_container").hide();
 
             if (!response[CONSTANTS.room_id_key]) {
                 show_room_buttons(true);
+            } else {
+                $("#active_room_container").show();
+                $("#active_room").text(response[CONSTANTS.room_id_key]);
+
+                show_room_buttons(false);
             }
         }
     });
