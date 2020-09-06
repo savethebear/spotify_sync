@@ -14,9 +14,9 @@ class SongList {
      * @param {int} playlist_id Spotify playlist id
      * @param {string} current_song Name of the current song
      */
-    updateSongList(playlist_id, current_song) {
+    async updateSongList(playlist_id, current_song) {
         this.playlist_id = playlist_id;
-        this.getSongList(current_song);
+        return this.getSongList(current_song);
     }
 
     /**
@@ -73,6 +73,7 @@ class SongList {
                 this.current_offset = this.getOffset(current_song);
             }
         }
+        return this.current_offset;
     }
 
     parsePlaylistId() {
