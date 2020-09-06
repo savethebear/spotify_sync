@@ -41,7 +41,7 @@ $("#cancel_room_id").click(function() {
 
 
 document.addEventListener('DOMContentLoaded', () => {
-    chrome.storage.sync.clear();
+    // chrome.storage.sync.clear();
     // init view
     chrome.storage.sync.get([CONSTANTS.access_token_key, CONSTANTS.room_id_key, CONSTANTS.access_token_expiry_key], function (response) {
         if (response[CONSTANTS.access_token_key] && parseInt(response[CONSTANTS.access_token_expiry_key]) > Date.now()) {

@@ -179,6 +179,11 @@ io.on("connection", (socket) => {
         socket.to(room_id).emit('external_seek_trigger', cur_timestamp);
     });
 
+    socket.on('change_playlist', (room_id, playlist_link, song_uri) => {
+        console.log("Song changed...");
+        socket.to(room_id).emit('external_change_playlist', playlist_link, song_uri);
+    });
+
     socket.on('disconnecting', (reason) => {
         for (let key of Object.keys(socket.rooms)) {
             const room = active_rooms[key];

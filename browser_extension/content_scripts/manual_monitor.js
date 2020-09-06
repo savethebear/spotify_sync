@@ -169,6 +169,11 @@ function setup(room_input = "test_room") {
                 seek(modified_timestamp);
             }
         });
+
+        // Song changed handle
+        socket.on("external_song_changed", (playlist_id, song_uri) => {
+            console.log(`playlist id: ${playlist_id},  song uri: ${song_uri}`);
+        });
     }
 
     function setupObservers(session_data) {
@@ -269,13 +274,14 @@ function setup(room_input = "test_room") {
             console.log(`init song list for id ${current_link}...`);
             return;
         }
-
+        console.log(`current link: ${current_link}, playlist id: ${song_list.playlist_id}`);
         // check if the album has changed
         if (current_link !== song_list.playlist_id) {
             // playlist changed...
             song_list.updateSongList(current_link, current_song);
             console.log("playlist changed");
-            // todo: emit something
+            socket.emit('change_playlist', room_id, 
+                    current_link, now_playing.find("a[data-testid='nowplaying-track-link']").first().attr('href'));
         } else {
             // detect prev or next (assuming no shuffle)
             const offset = song_list.getOffset(current_song);
