@@ -66,7 +66,7 @@ class SongList {
             }
             link = data.next;
         }
-        if (current_song) {
+        if (current_song !== undefined && current_song !== null) {
             if (typeof current_song === "number") {
                 this.current_offset = current_song;
             } else {

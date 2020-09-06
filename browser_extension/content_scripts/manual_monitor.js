@@ -171,6 +171,9 @@ function setup(room_input = "test_room") {
         // Song changed handle
         socket.on("external_change_playlist", (playlist_id, song_offset) => {
             console.log(`playlist id: ${playlist_id},  song uri: ${song_offset}`);
+            observer_blocker.override = true;
+            play(null, new SessionData(playlist_id, song_offset, null, 0), true);
+            song_list.updateSongList(playlist_id, song_offset);
         });
     }
 
@@ -384,7 +387,7 @@ function setup(room_input = "test_room") {
         });
     }
 
-    async function play(device_id, session_data) {
+    async function play(device_id, session_data, toggle_blocker) {
         let token = localStorage.getItem(CONSTANTS.access_token_key);
 
         if (!session_data.playlist_id) {
@@ -413,6 +416,8 @@ function setup(room_input = "test_room") {
         if (session_data.play_state && session_data.play_state !== current_play_state) {
             play_button.click();
         }
+
+        if (toggle_blocker) observer_blocker.override = false;
 
         function contextURIParse(playlist_id) {
             let temp = playlist_id.split('/');
