@@ -52,7 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // refresh access token interval
     const refresh_interval = 3600000
-    let refresh_token_interval = setInterval(() => {
+    let refresh_token_interval = setInterval(refresh_token, refresh_interval);
+    refresh_token();
+
+    function refresh_token() {
         const ref_url = new URL(`https://${CONSTANTS.server_ip}/spotify_get_token`);
         ref_url.searchParams.append("type", "refresh_token");
         ref_url.searchParams.append("refresh_token", localStorage.getItem(CONSTANTS.refresh_token_key));
@@ -60,14 +63,14 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(data => {
                 const expire_time = Date.now() + 990 * parseInt(data.expires_in);
-                chrome.storage.sync.set({ 
+                chrome.storage.sync.set({
                     [CONSTANTS.access_token_key]: data.access_token,
                     [CONSTANTS.access_token_expiry_key]: expire_time
                 });
                 localStorage.setItem(CONSTANTS.access_token_key, data.access_token);
                 localStorage.setItem(CONSTANTS.access_token_expiry_key, expire_time);
             });
-    }, refresh_interval);
+    }
 });
 
 function setup(room_input = "test_room") {
@@ -414,7 +417,9 @@ function setup(room_input = "test_room") {
         const play_button = $(SELECTOR_PLAY_BUTTON).length > 0 ? $(SELECTOR_PLAY_BUTTON).first() : $(SELECTOR_PAUSE_BUTTON).first();
         const current_play_state = play_button.attr("data-testid") === "control-button-pause" ? "play" : "pause";
         if (session_data.play_state && session_data.play_state !== current_play_state) {
-            play_button.click();
+            setTimeout(() => {
+                play_button.click();
+            }, 500);
         }
 
         if (toggle_blocker) observer_blocker.override = false;
