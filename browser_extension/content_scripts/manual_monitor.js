@@ -172,6 +172,7 @@ function setup(room_input = "test_room") {
         socket.on("external_change_playlist", (playlist_id, song_offset) => {
             console.log(`playlist id: ${playlist_id},  song uri: ${song_offset}`);
             observer_blocker.override = true;
+            observer_blocker.override_song_change = true;
             play(null, new SessionData(playlist_id, song_offset, null, 0), true);
             song_list.updateSongList(playlist_id, song_offset);
         });
@@ -201,9 +202,7 @@ function setup(room_input = "test_room") {
                 }
 
                 song_changed_observer = new MutationObserver(function () {
-                    setTimeout(() => {
-                        song_changed(song_list, now_playing);
-                    }, 500);
+                    song_changed(song_list, now_playing);
                 });
                 song_changed_observer.observe(now_playing[0], { attributes: true, subtree: true, childList: true });
 
@@ -261,13 +260,14 @@ function setup(room_input = "test_room") {
     }
 
     async function song_changed(song_list) {
+        console.log(`song check ${observer_blocker.override}`);
         const now_playing = $(SELECTOR_NOW_PLAYING);
+
         // Event was triggered from socket
-        if (observer_blocker.override || observer_blocker.override_song_change) {
+        if (observer_blocker.override) {
             observer_blocker.override_song_change = false;
             return;
         }
-
         const album_obj = now_playing.find("div > div > a");
         const current_link = album_obj.attr('href');
         const current_song = now_playing.find("a[data-testid='nowplaying-track-link']").first().text();
