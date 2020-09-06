@@ -3,7 +3,10 @@ const CONSTANTS = new ConstantVariables();
 $("#authorise").unbind("click").click(function(e) {
     e.preventDefault();
     fetch(`https://${CONSTANTS.server_ip}/spotify_authorize`)
-        .then(e => e.json())
+        .then(e => {
+
+            return e.json()
+        })
         .then(data => {
             chrome.storage.sync.get([CONSTANTS.access_token_expiry_key], function (response) {
                 if (response && parseInt(response[CONSTANTS.access_token_expiry_key]) > Date.now()) {
@@ -30,21 +33,17 @@ $("#cancel_room_id").click(function() {
 
 document.addEventListener('DOMContentLoaded', () => {
     // init view
-    chrome.storage.sync.get([CONSTANTS.room_id_key], function(response) {
-        if (response[CONSTANTS.room_id_key]) {
-            $("#active_room_container").show();
-            $("#active_room").text(response[CONSTANTS.room_id_key]);
-
-            show_room_buttons(false);
-        }
-    });
-
     chrome.storage.sync.get([CONSTANTS.access_token_key, CONSTANTS.room_id_key, CONSTANTS.access_token_expiry_key], function (response) {
         if (response[CONSTANTS.access_token_key] && parseInt(response[CONSTANTS.access_token_expiry_key]) > Date.now()) {
             document.getElementById("authorise").style.display = "none";
 
             if (!response[CONSTANTS.room_id_key]) {
                 show_room_buttons(true);
+            } else {
+                $("#active_room_container").show();
+                $("#active_room").text(response[CONSTANTS.room_id_key]);
+
+                show_room_buttons(false);
             }
         }
     });
