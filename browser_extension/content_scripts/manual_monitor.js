@@ -135,27 +135,33 @@ function setup(room_input = "test_room") {
         });
 
         // Next button
-        socket.on("external_next_song", (offset) => {
+        socket.on("external_next_song", (session_data) => {
             observer_blocker.executeEvent(function () {
                 observer_blocker.override_song_change = true;
-                if (offset !== song_list.current_offset) {
-                    if (Math.abs(offset - song_list.current_offset) > 1) {
-                        play(null, new SessionData(song_list.playlist_id, offset, 0));
+                const local_session_data = get_session_data();
+                const is_dif_playlist = session_data.playlist_id !== local_session_data.playlist_id;
+                if (session_data.song_offset !== local_session_data.song_offset 
+                    || is_dif_playlist) {
+
+                    if (is_dif_playlist || Math.abs(offset - song_list.current_offset) > 1) {
+                        play(null, session_data);
                     } else {
                         $(SELECTOR_NEXT_BUTTON).first().click();
                     }
-                    song_list.current_offset = offset;
+                    song_list.current_offset = session_data.song_offset;
                 }
             });
         });
 
         // Previous button
-        socket.on("external_previous_song", (offset) => {
+        socket.on("external_previous_song", (session_data) => {
             observer_blocker.executeEvent(function () {
                 observer_blocker.override_song_change = true;
-                if (offset !== song_list.current_offset) {
-                    play(null, new SessionData(song_list.playlist_id, offset, 0));
-                    song_list.current_offset = offset;
+                const local_session_data = get_session_data();
+                const is_dif_playlist = session_data.playlist_id !== local_session_data.playlist_id;
+                if (session_data.song_offset !== local_session_data.song_offset || is_dif_playlist) {
+                    play(null, session_data);
+                    song_list.current_offset = session_data.song_offset;
                 }
             });
         });
@@ -249,7 +255,7 @@ function setup(room_input = "test_room") {
         if (observer_blocker.override) return;
 
         console.log("next has been triggered...");
-        socket.emit('next_song', offset, room_id, get_session_data());
+        socket.emit('next_song', room_id, get_session_data());
     }
 
     function prev_trigger(offset) {
@@ -257,7 +263,7 @@ function setup(room_input = "test_room") {
         if (observer_blocker.override) return;
 
         console.log("prev has been triggered...");
-        socket.emit('prev_song', offset, room_id, get_session_data());
+        socket.emit('prev_song', room_id, get_session_data());
     }
 
     async function song_changed(song_list) {
@@ -289,12 +295,12 @@ function setup(room_input = "test_room") {
         } else {
             // detect prev or next (assuming no shuffle)
             const offset = song_list.getOffset(current_song);
+            song_list.current_offset = offset;
             if (offset > song_list.current_offset) {
                 next_trigger(offset);
             } else {
                 prev_trigger(offset);
             }
-            song_list.current_offset = offset;
         }
     }
 

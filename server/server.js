@@ -164,14 +164,14 @@ io.on("connection", (socket) => {
         socket.to(room_id).emit('external_play_trigger', play_command);
     });
 
-    socket.on('next_song', (offset, room_id, session_data) => {
+    socket.on('next_song', (room_id, session_data) => {
         console.log("Next song trigger..." + JSON.stringify(session_data));
-        socket.to(room_id).emit('external_next_song', offset, session_data);
+        socket.to(room_id).emit('external_next_song', session_data);
     });
 
-    socket.on('prev_song', (offset, room_id, session_data) => {
-        console.log(`Prev song trigger for offset ${offset}... ${JSON.stringify(session_data)}`);
-        socket.to(room_id).emit('external_previous_song', offset, session_data);
+    socket.on('prev_song', (room_id, session_data) => {
+        console.log(`Prev song trigger... ${JSON.stringify(session_data)}`);
+        socket.to(room_id).emit('external_previous_song', session_data);
     });
 
     socket.on('seek_trigger', (cur_timestamp, room_id) => {
