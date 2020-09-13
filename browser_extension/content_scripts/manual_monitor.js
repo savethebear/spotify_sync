@@ -108,10 +108,8 @@ function setup(room_input = "test_room") {
     function setupListeners() {
         // ========== Session data handlers ==========
         socket.on("get_current_session", (socket_id) => {
-            const play_state = $(SELECTOR_PLAY_BUTTON).length > 0 ? "pause" : "play";
             socket.emit('send_session_data', socket_id,
-                new SessionData(song_list.playlist_id, song_list.current_offset, parseTimeToMS(seeking_data.progress_bar.text()),
-                    play_state));
+                get_session_data());
         });
 
         socket.on("retrieve_session_data", (session_data) => {
@@ -251,7 +249,7 @@ function setup(room_input = "test_room") {
         if (observer_blocker.override) return;
 
         console.log("next has been triggered...");
-        socket.emit('next_song', offset, room_id);
+        socket.emit('next_song', offset, room_id, get_session_data());
     }
 
     function prev_trigger(offset) {
@@ -259,7 +257,7 @@ function setup(room_input = "test_room") {
         if (observer_blocker.override) return;
 
         console.log("prev has been triggered...");
-        socket.emit('prev_song', offset, room_id);
+        socket.emit('prev_song', offset, room_id, get_session_data());
     }
 
     async function song_changed(song_list) {
@@ -429,5 +427,11 @@ function setup(room_input = "test_room") {
             temp.shift();
             return temp.join(':');
         }
+    }
+
+    function get_session_data() {
+        const play_state = $(SELECTOR_PLAY_BUTTON).length > 0 ? "pause" : "play";
+        return new SessionData(song_list.playlist_id, song_list.current_offset, parseTimeToMS(seeking_data.progress_bar.text()),
+            play_state);
     }
 }

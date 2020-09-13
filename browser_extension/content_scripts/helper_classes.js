@@ -60,7 +60,7 @@ class SongList {
             });
             const data = await response.json();
             for (const song of data.items) {
-                const cur_track = song.track;
+                const cur_track = song.track || song;
                 this.song_list.push(new Song(cur_track.name, cur_track.artists[0].name,
                     cur_track.duration_ms, cur_track.available_markets));
             }
