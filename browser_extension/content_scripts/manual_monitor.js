@@ -145,7 +145,7 @@ function setup(room_input = "test_room") {
                 if (session_data.song_offset !== local_session_data.song_offset 
                     || is_dif_playlist) {
 
-                    if (is_dif_playlist || Math.abs(offset - song_list.current_offset) > 1) {
+                    if (is_dif_playlist || Math.abs(session_data.song_offset - local_session_data.song_offset) > 1) {
                         play(null, session_data);
                     } else {
                         $(SELECTOR_NEXT_BUTTON).first().click();
