@@ -245,11 +245,9 @@ function setup(room_input = "test_room") {
         clearInterval(seeking_data.seeking_interval);
 
         // start interval if currently playing
-        if (play_button.attr("data-testid") === "control-button-pause") {
-            seeking_data.seeking_interval = setInterval(function () {
-                seek_monitor(seeking_data);
-            }, 500);
-        }
+        seeking_data.seeking_interval = setInterval(function () {
+            seek_monitor(seeking_data);
+        }, 500);
     }
 
     function next_trigger(offset) {
