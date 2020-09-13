@@ -7,6 +7,7 @@ class SongList {
         this.playlist_id = null;
         this.song_list = [];
         this.current_offset = null;
+        this.country = null;
     }
 
     /**
@@ -46,7 +47,7 @@ class SongList {
             return;
         }
 
-        let link = `https://api.spotify.com/v1${this.parsePlaylistId()}/tracks`;
+        let link = this.computeAPI();
         this.song_list = [];
         while (link) {
             let response = await fetch(link, {
@@ -59,7 +60,8 @@ class SongList {
                 console.log(error);
             });
             const data = await response.json();
-            for (const song of data.items) {
+            const items = data.items || data.tracks
+            for (const song of items) {
                 const cur_track = song.track || song;
                 this.song_list.push(new Song(cur_track.name, cur_track.artists[0].name,
                     cur_track.duration_ms, cur_track.available_markets));
@@ -81,6 +83,16 @@ class SongList {
         modified = modified.replace("album", "albums");
         modified = modified.replace("playlist", "playlists");
         return modified;
+    }
+
+    computeAPI() {
+        let route;
+        if (this.playlist_id.includes("artist")) {
+            route = `${this.playlist_id.replace("artist", "artists")}/top-tracks?country=${this.country}`;
+        } else {
+            route = `${this.parsePlaylistId()}/tracks`;
+        }
+        return `https://api.spotify.com/v1${route}`;
     }
 
     getCurrentSong() {

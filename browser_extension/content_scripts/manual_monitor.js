@@ -74,6 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setup(room_input = "test_room") {
+    get_user_info();
+
     const room_id = room_input;
 
     const observer_blocker = new ObserverBlocker(); // variable representing source of player interaction
@@ -255,7 +257,7 @@ function setup(room_input = "test_room") {
         if (observer_blocker.override) return;
 
         console.log("next has been triggered...");
-        socket.emit('next_song', room_id, get_session_data());
+        socket.emit('next_song', room_id, get_session_data(offset));
     }
 
     function prev_trigger(offset) {
@@ -263,7 +265,7 @@ function setup(room_input = "test_room") {
         if (observer_blocker.override) return;
 
         console.log("prev has been triggered...");
-        socket.emit('prev_song', room_id, get_session_data());
+        socket.emit('prev_song', room_id, get_session_data(offset));
     }
 
     async function song_changed(song_list) {
@@ -295,12 +297,12 @@ function setup(room_input = "test_room") {
         } else {
             // detect prev or next (assuming no shuffle)
             const offset = song_list.getOffset(current_song);
-            song_list.current_offset = offset;
             if (offset > song_list.current_offset) {
                 next_trigger(offset);
             } else {
                 prev_trigger(offset);
             }
+            song_list.current_offset = offset;
         }
     }
 
@@ -435,9 +437,27 @@ function setup(room_input = "test_room") {
         }
     }
 
-    function get_session_data() {
+    async function get_user_info() {
+        let token = localStorage.getItem(CONSTANTS.access_token_key);
+        const url = `https://api.spotify.com/v1/me`;
+
+        const data = await fetch(url, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }).then((response) => response.json())
+        .catch(error => {
+            console.error("Failed to retrieve user info...");
+        });
+
+        song_list.country = data.country;
+    }
+
+    function get_session_data(offset=null) {
+        if (!offset) offset = song_list.current_offset;
         const play_state = $(SELECTOR_PLAY_BUTTON).length > 0 ? "pause" : "play";
-        return new SessionData(song_list.playlist_id, song_list.current_offset, parseTimeToMS(seeking_data.progress_bar.text()),
+        return new SessionData(song_list.playlist_id, offset, parseTimeToMS(seeking_data.progress_bar.text()),
             play_state);
     }
 }
