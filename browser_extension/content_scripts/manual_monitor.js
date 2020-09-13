@@ -52,7 +52,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // refresh access token interval
     const refresh_interval = 3600000
-    let refresh_token_interval = setInterval(() => {
+    let refresh_token_interval = setInterval(refresh_token, refresh_interval);
+    refresh_token();
+
+    function refresh_token() {
         const ref_url = new URL(`https://${CONSTANTS.server_ip}/spotify_get_token`);
         ref_url.searchParams.append("type", "refresh_token");
         ref_url.searchParams.append("refresh_token", localStorage.getItem(CONSTANTS.refresh_token_key));
@@ -60,17 +63,19 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(data => {
                 const expire_time = Date.now() + 990 * parseInt(data.expires_in);
-                chrome.storage.sync.set({ 
+                chrome.storage.sync.set({
                     [CONSTANTS.access_token_key]: data.access_token,
                     [CONSTANTS.access_token_expiry_key]: expire_time
                 });
                 localStorage.setItem(CONSTANTS.access_token_key, data.access_token);
                 localStorage.setItem(CONSTANTS.access_token_expiry_key, expire_time);
             });
-    }, refresh_interval);
+    }
 });
 
 function setup(room_input = "test_room") {
+    get_user_info();
+
     const room_id = room_input;
 
     const observer_blocker = new ObserverBlocker(); // variable representing source of player interaction
@@ -105,10 +110,8 @@ function setup(room_input = "test_room") {
     function setupListeners() {
         // ========== Session data handlers ==========
         socket.on("get_current_session", (socket_id) => {
-            const play_state = $(SELECTOR_PLAY_BUTTON).length > 0 ? "pause" : "play";
             socket.emit('send_session_data', socket_id,
-                new SessionData(song_list.playlist_id, song_list.current_offset, parseTimeToMS(seeking_data.progress_bar.text()),
-                    play_state));
+                get_session_data());
         });
 
         socket.on("retrieve_session_data", (session_data) => {
@@ -134,27 +137,33 @@ function setup(room_input = "test_room") {
         });
 
         // Next button
-        socket.on("external_next_song", (offset) => {
+        socket.on("external_next_song", (session_data) => {
             observer_blocker.executeEvent(function () {
                 observer_blocker.override_song_change = true;
-                if (offset !== song_list.current_offset) {
-                    if (Math.abs(offset - song_list.current_offset) > 1) {
-                        play(null, new SessionData(song_list.playlist_id, offset, 0));
+                const local_session_data = get_session_data();
+                const is_dif_playlist = session_data.playlist_id !== local_session_data.playlist_id;
+                if (session_data.song_offset !== local_session_data.song_offset 
+                    || is_dif_playlist) {
+
+                    if (is_dif_playlist || Math.abs(session_data.song_offset - local_session_data.song_offset) > 1) {
+                        play(null, session_data);
                     } else {
                         $(SELECTOR_NEXT_BUTTON).first().click();
                     }
-                    song_list.current_offset = offset;
+                    song_list.current_offset = session_data.song_offset;
                 }
             });
         });
 
         // Previous button
-        socket.on("external_previous_song", (offset) => {
+        socket.on("external_previous_song", (session_data) => {
             observer_blocker.executeEvent(function () {
                 observer_blocker.override_song_change = true;
-                if (offset !== song_list.current_offset) {
-                    play(null, new SessionData(song_list.playlist_id, offset, 0));
-                    song_list.current_offset = offset;
+                const local_session_data = get_session_data();
+                const is_dif_playlist = session_data.playlist_id !== local_session_data.playlist_id;
+                if (session_data.song_offset !== local_session_data.song_offset || is_dif_playlist) {
+                    play(null, session_data);
+                    song_list.current_offset = session_data.song_offset;
                 }
             });
         });
@@ -248,7 +257,7 @@ function setup(room_input = "test_room") {
         if (observer_blocker.override) return;
 
         console.log("next has been triggered...");
-        socket.emit('next_song', offset, room_id);
+        socket.emit('next_song', room_id, get_session_data(offset));
     }
 
     function prev_trigger(offset) {
@@ -256,7 +265,7 @@ function setup(room_input = "test_room") {
         if (observer_blocker.override) return;
 
         console.log("prev has been triggered...");
-        socket.emit('prev_song', offset, room_id);
+        socket.emit('prev_song', room_id, get_session_data(offset));
     }
 
     async function song_changed(song_list) {
@@ -414,7 +423,9 @@ function setup(room_input = "test_room") {
         const play_button = $(SELECTOR_PLAY_BUTTON).length > 0 ? $(SELECTOR_PLAY_BUTTON).first() : $(SELECTOR_PAUSE_BUTTON).first();
         const current_play_state = play_button.attr("data-testid") === "control-button-pause" ? "play" : "pause";
         if (session_data.play_state && session_data.play_state !== current_play_state) {
-            play_button.click();
+            setTimeout(() => {
+                play_button.click();
+            }, 500);
         }
 
         if (toggle_blocker) observer_blocker.override = false;
@@ -424,5 +435,29 @@ function setup(room_input = "test_room") {
             temp.shift();
             return temp.join(':');
         }
+    }
+
+    async function get_user_info() {
+        let token = localStorage.getItem(CONSTANTS.access_token_key);
+        const url = `https://api.spotify.com/v1/me`;
+
+        const data = await fetch(url, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        }).then((response) => response.json())
+        .catch(error => {
+            console.error("Failed to retrieve user info...");
+        });
+
+        song_list.country = data.country;
+    }
+
+    function get_session_data(offset=null) {
+        if (!offset) offset = song_list.current_offset;
+        const play_state = $(SELECTOR_PLAY_BUTTON).length > 0 ? "pause" : "play";
+        return new SessionData(song_list.playlist_id, offset, parseTimeToMS(seeking_data.progress_bar.text()),
+            play_state);
     }
 }
