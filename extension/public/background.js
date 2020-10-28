@@ -1,10 +1,6 @@
 const SPOTIFY_SESSION_TOKEN_KEY = "spotify_session_token";
 const SPOTIFY_SESSION_TOKEN_EXPIRES_IN = "spotify_session_expiry"
 
-chrome.runtime.onInstalled.addListener(function () {
-    chrome.browserAction.setPopup({popup: "sync_interface.html"});
-});
-
 let spotify_session_token;
 let spotify_session_expiry;
 chrome.storage.sync.get([SPOTIFY_SESSION_TOKEN_KEY], function (result) {
